@@ -53,7 +53,7 @@ namespace opentkLearn
         {
             base.OnLoad();
 
-            shader = new Shader("shader.vert", "shader.frag");
+            shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
 
             GL.ClearColor(0.2f,0.3f,0.3f,1.0f);
 
