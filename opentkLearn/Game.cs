@@ -32,6 +32,9 @@ namespace opentkLearn
         public Game(int width, int height, string title) : base(
             GameWindowSettings.Default, 
             new NativeWindowSettings() { 
+                API = ContextAPI.OpenGL,
+                APIVersion = new Version(3,3),
+                Profile = ContextProfile.Core,
                 ClientSize = (width, height), 
                 Title = title }
             ) { }
