@@ -71,6 +71,11 @@ namespace opentkLearn
             GL.UseProgram(Handle);
         }
 
+        public int GetAttribLocation(string attribName)
+        {
+            return GL.GetAttribLocation(Handle, attribName);
+        }
+
         private bool disposedValue = false;
 
         protected virtual void Dispose(bool disposing)

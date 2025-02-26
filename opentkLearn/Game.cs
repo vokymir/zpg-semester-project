@@ -15,6 +15,7 @@ namespace opentkLearn
 {
     class Game : GameWindow
     {
+        /*
         float[] _vertices =
         {
             // positions        //colors
@@ -22,16 +23,32 @@ namespace opentkLearn
             0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, // bottom-right
             -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-left
             -0.5f, 0.5f, 0.0f,  1.0f, 0.0f, 1.0f, // top left
+        };*/
+
+        float[] _vertices =
+        {
+            // positions        // Texture coordinates
+            0.5f, 0.5f, 0.0f,   1.0f, 1.0f, // top right
+            0.5f, -0.5f, 0.0f,  1.0f, 0.0f, // bottom-right
+            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom-left
+            -0.5f, 0.5f, 0.0f,  0.0f, 1.0f, // top left
         };
         uint[] indices =
         {
             0,1,3,
             1,2,3
         };
+        float[] texCoords =
+        {
+            0.0f, 0.0f,
+            1.0f, 0.0f,
+            0.5f, 1.0f
+        };
         int VertexBufferObject;
         int ElementBufferObject;
         int VertexArrayObject;
-        Shader shader;
+        Shader _shader;
+        Texture _texture;
 
         public Game(int width, int height, string title) : base(
             GameWindowSettings.Default, 
@@ -57,7 +74,7 @@ namespace opentkLearn
         {
             base.OnLoad();
 
-            shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
+            _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
 
             GL.ClearColor(0.2f,0.3f,0.3f,1.0f);
 
@@ -72,12 +89,16 @@ namespace opentkLearn
             VertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(VertexArrayObject);
 
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+            //GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
 
+            int texCoordLocation = _shader.GetAttribLocation("aTexCoord");
+            GL.EnableVertexAttribArray(texCoordLocation);
+            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
             
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
-            GL.EnableVertexAttribArray(1);
+            //GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
+            //GL.EnableVertexAttribArray(1);
 
             
             ElementBufferObject = GL.GenBuffer();
@@ -86,7 +107,10 @@ namespace opentkLearn
 
 
 
-            shader.Use();
+            _shader.Use();
+
+
+            _texture = new Texture("Textures/container.jpg");
         }
         protected override void OnRenderFrame(FrameEventArgs args)
         {
@@ -94,7 +118,7 @@ namespace opentkLearn
 
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
-            shader.Use();
+            _shader.Use();
 
 
             GL.BindVertexArray(VertexArrayObject);
@@ -107,7 +131,7 @@ namespace opentkLearn
         {
             base.OnUnload();
             
-            shader.Dispose();
+            _shader.Dispose();
         }
 
         protected override void OnFramebufferResize(FramebufferResizeEventArgs e)
