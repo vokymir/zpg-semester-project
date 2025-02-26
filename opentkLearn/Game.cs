@@ -15,12 +15,13 @@ namespace opentkLearn
 {
     class Game : GameWindow
     {
-        float[] vertices =
+        float[] _vertices =
         {
-            0.5f, 0.5f, 0.0f, // top right
-            0.5f, -0.5f, 0.0f, // bottom-right
-            -0.5f, -0.5f, 0.0f, // bottom-left
-            -0.5f, 0.5f, 0.0f // top left
+            // positions        //colors
+            0.5f, 0.5f, 0.0f,   1.0f, 0.0f, 0.0f, // top right
+            0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-left
+            -0.5f, 0.5f, 0.0f,  1.0f, 0.0f, 1.0f, // top left
         };
         uint[] indices =
         {
@@ -65,16 +66,18 @@ namespace opentkLearn
             VertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
 
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Length * sizeof(float), _vertices, BufferUsageHint.StaticDraw);
 
 
             VertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(VertexArrayObject);
 
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
 
-
+            
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
+            GL.EnableVertexAttribArray(1);
 
             
             ElementBufferObject = GL.GenBuffer();
@@ -84,9 +87,7 @@ namespace opentkLearn
 
 
             shader.Use();
-            stopwatch.Start();
         }
-        Stopwatch stopwatch = new Stopwatch();
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
@@ -95,10 +96,6 @@ namespace opentkLearn
 
             shader.Use();
 
-            double timeValue = stopwatch.ElapsedMilliseconds / 1000f; 
-            float greenValue = (float)Math.Sin(timeValue) / 2.0f + 0.5f;
-            int vertexColorLocation = GL.GetUniformLocation(shader.Handle, "ourColor");
-            GL.Uniform4(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
             GL.BindVertexArray(VertexArrayObject);
             //GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
