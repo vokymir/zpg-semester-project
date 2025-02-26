@@ -5,9 +5,11 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace opentkLearn
 {
@@ -29,6 +31,7 @@ namespace opentkLearn
         int ElementBufferObject;
         int VertexArrayObject;
         Shader shader;
+
         public Game(int width, int height, string title) : base(
             GameWindowSettings.Default, 
             new NativeWindowSettings() { 
@@ -81,7 +84,9 @@ namespace opentkLearn
 
 
             shader.Use();
+            stopwatch.Start();
         }
+        Stopwatch stopwatch = new Stopwatch();
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
@@ -89,6 +94,12 @@ namespace opentkLearn
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
             shader.Use();
+
+            double timeValue = stopwatch.ElapsedMilliseconds / 1000f; 
+            float greenValue = (float)Math.Sin(timeValue) / 2.0f + 0.5f;
+            int vertexColorLocation = GL.GetUniformLocation(shader.Handle, "ourColor");
+            GL.Uniform4(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
             GL.BindVertexArray(VertexArrayObject);
             //GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
             GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);

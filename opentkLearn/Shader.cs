@@ -9,7 +9,7 @@ namespace opentkLearn
 {
     class Shader : IDisposable
     {
-        int Handle;
+        public int Handle;
 
         public Shader(string vertexPath, string fragmentPath)
         {
