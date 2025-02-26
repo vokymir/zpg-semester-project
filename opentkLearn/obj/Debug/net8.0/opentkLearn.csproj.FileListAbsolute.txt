@@ -29,3 +29,5 @@ C:\Users\jakub\Desktop\School\zpg-semester-project\opentkLearn\obj\Debug\net8.0\
 C:\Users\jakub\Desktop\School\zpg-semester-project\opentkLearn\obj\Debug\net8.0\opentkLearn.pdb
 C:\Users\jakub\Desktop\School\zpg-semester-project\opentkLearn\obj\Debug\net8.0\opentkLearn.genruntimeconfig.cache
 C:\Users\jakub\Desktop\School\zpg-semester-project\opentkLearn\obj\Debug\net8.0\ref\opentkLearn.dll
+C:\Users\jakub\Desktop\School\zpg-semester-project\opentkLearn\bin\Debug\net8.0\shader.frag
+C:\Users\jakub\Desktop\School\zpg-semester-project\opentkLearn\bin\Debug\net8.0\shader.vert
