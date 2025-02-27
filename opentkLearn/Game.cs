@@ -49,6 +49,7 @@ namespace opentkLearn
         int VertexArrayObject;
         Shader _shader;
         Texture _texture;
+        Texture _texture2;
 
         public Game(int width, int height, string title) : base(
             GameWindowSettings.Default, 
@@ -111,6 +112,11 @@ namespace opentkLearn
 
 
             _texture = new Texture("Textures/container.jpg");
+            _texture2 = new Texture("Textures/awesomeface.png");
+
+            _shader.SetInt("texture1", 0);
+            _shader.SetInt("texture2", 1);
+
         }
         protected override void OnRenderFrame(FrameEventArgs args)
         {
@@ -118,10 +124,13 @@ namespace opentkLearn
 
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
+            GL.BindVertexArray(VertexArrayObject);
+
+            _texture.Use(TextureUnit.Texture0);
+            _texture2.Use(TextureUnit.Texture1);
             _shader.Use();
 
 
-            GL.BindVertexArray(VertexArrayObject);
             //GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
             GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
             SwapBuffers();
