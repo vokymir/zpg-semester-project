@@ -64,7 +64,10 @@ namespace opentkLearn
                 Title = title
             }
             )
-        { }
+        {
+            Width = width;
+            Height = height;
+        }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
@@ -132,17 +135,23 @@ namespace opentkLearn
             GL.BindVertexArray(VertexArrayObject);
 
 
-            Matrix4 transform = Matrix4.Identity;
+            /* Matrix4 transform = Matrix4.Identity;
 
-            transform *= Matrix4.CreateRotationZ(MathHelper.Pi);
-            transform *= Matrix4.CreateScale(0.5f, 1.5f, 1.0f);
-            transform *= Matrix4.CreateTranslation(0.2f, 0.0f, 0.0f);
+             transform *= Matrix4.CreateRotationZ(MathHelper.Pi);
+             transform *= Matrix4.CreateScale(0.5f, 1.5f, 1.0f);
+             transform *= Matrix4.CreateTranslation(0.2f, 0.0f, 0.0f);
+ */
+            Matrix4 model = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(-55.0f));
+            Matrix4 view = Matrix4.CreateTranslation(0.0f, 0.0f, -0.3f);
+            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.Pi / 2, Width / Height, 0.1f, 100.0f);
 
             _texture.Use(TextureUnit.Texture0);
             _texture2.Use(TextureUnit.Texture1);
             _shader.Use();
 
-            _shader.SetMatrix4("transform", transform);
+            _shader.SetMatrix4("model", model);
+            _shader.SetMatrix4("view", view);
+            _shader.SetMatrix4("projection", projection);
 
             //GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
             GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
@@ -156,9 +165,15 @@ namespace opentkLearn
             _shader.Dispose();
         }
 
+        public int Width;
+        public int Height;
+
         protected override void OnFramebufferResize(FramebufferResizeEventArgs e)
         {
             base.OnFramebufferResize(e);
+
+            Width = e.Width;
+            Height = e.Height;
 
             GL.Viewport(0, 0, e.Width, e.Height);
         }
