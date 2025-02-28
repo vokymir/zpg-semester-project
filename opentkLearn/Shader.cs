@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using OpenTK.Mathematics;
 
 namespace opentkLearn
 {
@@ -23,7 +24,7 @@ namespace opentkLearn
             GL.ShaderSource(VertexShader, VertexShaderSource);
 
             FragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-            GL.ShaderSource (FragmentShader, FragmentShaderSource);
+            GL.ShaderSource(FragmentShader, FragmentShaderSource);
 
             // compile shaders and check for errors
             GL.CompileShader(VertexShader);
@@ -39,7 +40,7 @@ namespace opentkLearn
             GL.CompileShader(FragmentShader);
 
             GL.GetShader(FragmentShader, ShaderParameter.CompileStatus, out success);
-            if(success == 0)
+            if (success == 0)
             {
                 string infoLog = GL.GetShaderInfoLog(FragmentShader);
                 Console.WriteLine(infoLog);
@@ -60,8 +61,13 @@ namespace opentkLearn
                 Console.WriteLine(infoLog);
             }
 
+
+
+
+
+
             GL.DetachShader(Handle, VertexShader);
-            GL.DetachShader (Handle, FragmentShader);
+            GL.DetachShader(Handle, FragmentShader);
             GL.DeleteShader(FragmentShader);
             GL.DeleteShader(VertexShader);
         }
@@ -104,9 +110,21 @@ namespace opentkLearn
 
         public void SetInt(string name, int value)
         {
+            GL.UseProgram(Handle);
+
             int location = GL.GetUniformLocation(Handle, name);
 
             GL.Uniform1(location, value);
+        }
+
+        public void SetMatrix4(string name, Matrix4 data)
+        {
+            GL.UseProgram(Handle);
+
+            int location = GL.GetUniformLocation(Handle, name);
+
+
+            GL.UniformMatrix4(location, true, ref data);
         }
     }
 }
