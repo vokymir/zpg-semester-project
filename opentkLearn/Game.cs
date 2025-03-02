@@ -26,6 +26,7 @@ namespace opentkLearn
             -0.5f, 0.5f, 0.0f,  1.0f, 0.0f, 1.0f, // top left
         };*/
 
+        /*
         float[] _vertices =
         {
             // positions        // Texture coordinates
@@ -34,6 +35,52 @@ namespace opentkLearn
             -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom-left
             -0.5f, 0.5f, 0.0f,  0.0f, 1.0f, // top left
         };
+        */
+        float[] _vertices = {
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+};
+
+
         uint[] indices =
         {
             0,1,3,
@@ -51,6 +98,7 @@ namespace opentkLearn
         Shader _shader;
         Texture _texture;
         Texture _texture2;
+        Stopwatch stopwatch;
 
 
         public Game(int width, int height, string title) : base(
@@ -67,8 +115,10 @@ namespace opentkLearn
         {
             Width = width;
             Height = height;
+            stopwatch = new Stopwatch();
         }
 
+        bool moveRight = false;
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
             base.OnUpdateFrame(args);
@@ -76,6 +126,14 @@ namespace opentkLearn
             if (KeyboardState.IsKeyDown(Keys.Escape))
             {
                 Close();
+            }
+            if (KeyboardState.IsKeyDown(Keys.A))
+            {
+                moveRight = true;
+            }
+            else
+            {
+                moveRight = false;
             }
         }
 
@@ -115,6 +173,7 @@ namespace opentkLearn
             GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
 
+            GL.Enable(EnableCap.DepthTest);
 
             _shader.Use();
 
@@ -125,12 +184,14 @@ namespace opentkLearn
             _shader.SetInt("texture1", 0);
             _shader.SetInt("texture2", 1);
 
+            stopwatch.Start();
+
         }
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
 
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             GL.BindVertexArray(VertexArrayObject);
 
@@ -141,8 +202,10 @@ namespace opentkLearn
              transform *= Matrix4.CreateScale(0.5f, 1.5f, 1.0f);
              transform *= Matrix4.CreateTranslation(0.2f, 0.0f, 0.0f);
  */
-            Matrix4 model = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(-55.0f));
-            Matrix4 view = Matrix4.CreateTranslation(0.0f, 0.0f, -0.3f);
+            //Matrix4 model = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(-55.0f));
+            Matrix4 model = Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(stopwatch.ElapsedMilliseconds / 100));
+            if (moveRight) { model *= Matrix4.CreateRotationY(MathHelper.PiOver6); }
+            Matrix4 view = Matrix4.CreateTranslation(0.0f, 0.0f, -2.3f);
             Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.Pi / 2, Width / Height, 0.1f, 100.0f);
 
             _texture.Use(TextureUnit.Texture0);
@@ -154,7 +217,8 @@ namespace opentkLearn
             _shader.SetMatrix4("projection", projection);
 
             //GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
-            GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+            //GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
             SwapBuffers();
         }
 
