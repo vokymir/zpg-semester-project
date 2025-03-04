@@ -118,6 +118,25 @@ namespace opentkLearn
             stopwatch = new Stopwatch();
         }
 
+        protected float _fov;
+
+        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        {
+            base.OnMouseWheel(e);
+
+            if (_fov > 45.0f)
+            {
+                _fov = 45.0f;
+            }
+            else if (_fov < 1.0f)
+            {
+                _fov = 1.0f;
+            }
+            else
+            {
+                _fov -= e.OffsetY;
+            }
+        }
 
 
         bool moveRight = false;
@@ -214,6 +233,8 @@ namespace opentkLearn
         {
             base.OnLoad();
 
+            _fov = 45.0f;
+
             CursorState = CursorState.Grabbed;
 
             _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
@@ -286,7 +307,7 @@ namespace opentkLearn
             // if (moveRight) { model *= Matrix4.CreateRotationY(MathHelper.PiOver6); }
             //Matrix4 view = Matrix4.CreateTranslation(0.0f, 0.0f, -2.3f);
             Matrix4 view = Matrix4.LookAt(camPos, camPos + camFront, camUp);
-            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.Pi / 2, Width / Height, 0.1f, 100.0f);
+            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(_fov), Width / Height, 0.1f, 100.0f);
 
             _texture.Use(TextureUnit.Texture0);
             _texture2.Use(TextureUnit.Texture1);
