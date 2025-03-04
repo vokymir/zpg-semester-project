@@ -118,28 +118,103 @@ namespace opentkLearn
             stopwatch = new Stopwatch();
         }
 
-        bool moveRight = false;
-        protected override void OnUpdateFrame(FrameEventArgs args)
-        {
-            base.OnUpdateFrame(args);
 
-            if (KeyboardState.IsKeyDown(Keys.Escape))
+
+        bool moveRight = false;
+        Vector2 mouseLastPos;
+        bool mouseFirstMove = true;
+        float camYaw = 0.0f;
+        float camPitch = 0.0f;
+        float camSensitivity = 0.5f;
+        protected override void OnUpdateFrame(FrameEventArgs e)
+        {
+
+            if (!IsFocused)
             {
-                Close();
+                return;
             }
-            if (KeyboardState.IsKeyDown(Keys.A))
+
+            if (mouseFirstMove)
             {
-                moveRight = true;
+                mouseLastPos = new Vector2(MousePosition.X, MousePosition.Y);
+                mouseFirstMove = false;
             }
             else
             {
-                moveRight = false;
+                float deltaX = MousePosition.X - mouseLastPos.X;
+                float deltaY = MousePosition.Y - mouseLastPos.Y;
+                mouseLastPos = new Vector2(MousePosition.X, MousePosition.Y);
+
+                camYaw += deltaX * camSensitivity;
+                if (camPitch > 89.0f)
+                {
+                    camPitch = 89.0f;
+                }
+                else if (camPitch < -89.0f)
+                {
+                    camPitch = -89.0f;
+                }
+                else
+                {
+                    camPitch -= deltaY * camSensitivity;
+                }
             }
+
+            camFront.X = (float)Math.Cos(MathHelper.DegreesToRadians(camPitch)) * (float)Math.Cos(MathHelper.DegreesToRadians(camYaw));
+            camFront.Y = (float)Math.Sin(MathHelper.DegreesToRadians(camPitch));
+            camFront.Z = (float)Math.Cos(MathHelper.DegreesToRadians(camPitch)) * (float)Math.Sin(MathHelper.DegreesToRadians(camYaw));
+
+            camFront = Vector3.Normalize(camFront);
+
+
+            var input = KeyboardState;
+
+            if (input.IsKeyDown(Keys.Escape))
+            {
+                Close();
+            }
+            /*            if (KeyboardState.IsKeyDown(Keys.A))
+                        {
+                            moveRight = true;
+                        }
+                        else
+                        {
+                            moveRight = false;
+                        }
+                        */
+            if (input.IsKeyDown(Keys.W))
+            {
+                camPos += camFront * camSpeed * (float)e.Time; //Forward 
+            }
+
+            if (input.IsKeyDown(Keys.S))
+            {
+                camPos -= camFront * camSpeed * (float)e.Time; //Backwards
+            }
+            if (input.IsKeyDown(Keys.A))
+            {
+                camPos -= Vector3.Normalize(Vector3.Cross(camFront, camUp)) * camSpeed * (float)e.Time; //Left
+            }
+            if (input.IsKeyDown(Keys.D))
+            {
+                camPos += Vector3.Normalize(Vector3.Cross(camFront, camUp)) * camSpeed * (float)e.Time; //Right
+            }
+            if (input.IsKeyDown(Keys.J))
+            {
+                camPos -= camUp * camSpeed * (float)e.Time;
+            }
+            if (input.IsKeyDown(Keys.K))
+            {
+                camPos += camUp * camSpeed * (float)e.Time;
+            }
+
         }
 
         protected override void OnLoad()
         {
             base.OnLoad();
+
+            CursorState = CursorState.Grabbed;
 
             _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
 
@@ -187,6 +262,10 @@ namespace opentkLearn
             stopwatch.Start();
 
         }
+        float camSpeed = 1.5f;
+        Vector3 camPos = new Vector3(0.0f, 0.0f, 3.0f);
+        Vector3 camFront = new Vector3(0.0f, 0.0f, -1.0f);
+        Vector3 camUp = new Vector3(0.0f, 1.0f, 0.0f);
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
@@ -204,8 +283,9 @@ namespace opentkLearn
  */
             //Matrix4 model = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(-55.0f));
             Matrix4 model = Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(stopwatch.ElapsedMilliseconds / 100));
-            if (moveRight) { model *= Matrix4.CreateRotationY(MathHelper.PiOver6); }
-            Matrix4 view = Matrix4.CreateTranslation(0.0f, 0.0f, -2.3f);
+            // if (moveRight) { model *= Matrix4.CreateRotationY(MathHelper.PiOver6); }
+            //Matrix4 view = Matrix4.CreateTranslation(0.0f, 0.0f, -2.3f);
+            Matrix4 view = Matrix4.LookAt(camPos, camPos + camFront, camUp);
             Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.Pi / 2, Width / Height, 0.1f, 100.0f);
 
             _texture.Use(TextureUnit.Texture0);
@@ -220,6 +300,8 @@ namespace opentkLearn
             //GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
             GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
             SwapBuffers();
+
+            Console.WriteLine(camPos);
         }
 
         protected override void OnUnload()
