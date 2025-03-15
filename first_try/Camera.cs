@@ -6,7 +6,7 @@ namespace zpg
 
     class Camera : Entity
     {
-        private float speed = 1.0f;
+        private float speed = 3.0f;
 
         private float pitch = 0.0f;
         private float yaw = -90.0f;
@@ -56,6 +56,8 @@ namespace zpg
             if (input.IsKeyDown(Keys.S)) direction -= Front;
             if (input.IsKeyDown(Keys.A)) direction -= Vector3.Cross(Front, Up).Normalized();
             if (input.IsKeyDown(Keys.D)) direction += Vector3.Cross(Front, Up).Normalized();
+
+            direction.Y = 0;
 
             if (direction.LengthSquared > 0)
             {

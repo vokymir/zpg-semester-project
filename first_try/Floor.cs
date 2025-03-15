@@ -2,26 +2,20 @@ using OpenTK.Graphics.OpenGL;
 
 namespace zpg
 {
-    class Tetrahedron : RenderObject
+    class Floor : RenderObject
     {
+        public Floor(Shader shader, float width, float depth) : base(shader,
+                new float[]{
+                    0, 0, 0,
+                    width, 0, 0,
+                    width, 0, depth,
+                    0, 0, depth
 
-        public Tetrahedron(Shader shader) : base(shader,
-            new float[]
-            {
-            -0.7f, 0, 0.7f,
-            0.7f, 0, 0.7f,
-            0, 0, -1,
-            0, 3, 0
-            },
-            new uint[]
-            {
-            0, 1, 2,
-            0, 3, 1,
-            0, 2, 3,
-            1, 3, 2
-            })
-        {
-        }
+                }, new uint[]{
+                    2, 1, 0,
+                    3, 2, 0
+                })
+        { }
 
         PolygonMode previousPolygonMode;
 
@@ -30,7 +24,7 @@ namespace zpg
             base.PreRender();
             GL.GetInteger(GetPName.PolygonMode, out int previousMode);
             previousPolygonMode = (PolygonMode)previousMode;
-            GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Line);
+            GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
         }
 
         protected override void PostRender()

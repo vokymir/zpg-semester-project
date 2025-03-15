@@ -1,4 +1,4 @@
-using OpenTK.Graphics.OpenGL4;
+using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
@@ -30,17 +30,26 @@ namespace zpg
         protected override void OnLoad()
         {
             camera = new Camera(Size.X / (float)Size.Y);
-            camera.Transform.Position = new OpenTK.Mathematics.Vector3(3, 0, 1);
+            camera.Transform.Position = new OpenTK.Mathematics.Vector3(0, 1.7f, 0);
             CursorState = CursorState.Grabbed;
 
             // create two objects
             Shader shader = new Shader("./Shaders/shader.vert", "./Shaders/shader.frag");
             var obj = new Tetrahedron(shader);
             obj.Transform.Position = new Vector3(1, 0, 0);
-            objects.Add(obj);
+            /*objects.Add(obj);*/
             obj = new Tetrahedron(shader);
             obj.Transform.Position = new Vector3(-1, 0, 0);
-            objects.Add(obj);
+            /*objects.Add(obj);*/
+
+            var floor = new Floor(shader, 10, 10);
+            /*objects.Add(floor);*/
+            var cube = new Cube(shader, 2, 3, 2);
+            cube.Transform.Position.Z = -9;
+            objects.Add(cube);
+
+            // don't render non-visible objects (based on triangle normal)
+            GL.Enable(EnableCap.CullFace);
 
             GL.Enable(EnableCap.DebugOutput);
             GL.Enable(EnableCap.DebugOutputSynchronous);
@@ -72,7 +81,7 @@ namespace zpg
             var input = KeyboardState;
             camera.ProcessKeyboard(input, (float)args.Time);
 
-            if (input.IsKeyPressed(Keys.Escape))
+            if (input.IsKeyPressed(Keys.Escape) || input.IsKeyPressed(Keys.CapsLock))
             {
                 Close();
             }
@@ -80,7 +89,6 @@ namespace zpg
             {
                 CursorState = CursorState == CursorState.Grabbed ? CursorState.Normal : CursorState.Grabbed;
             }
-
         }
 
         protected override void OnMouseMove(MouseMoveEventArgs e)
