@@ -45,7 +45,48 @@ namespace zpg
                         if ('o' <= ch && ch <= 'z')
                         {
                             Cube wall = new Cube(shader, blockW, blockH, blockD);
+                            wall.Transform.Position = new OpenTK.Mathematics.Vector3(j * blockW, blockH / 2, i * blockD);
+
+                            objects.Add(wall);
+                        }
+
+                        // add doors
+                        if ('A' <= ch && ch <= 'G')
+                        {
+                            Cube wall = new Cube(shader, blockW, blockH, blockD);
+                            wall.Transform.Position = new OpenTK.Mathematics.Vector3(j * blockW, blockH / 2, i * blockD);
+                            wall.Transform.Scale *= 0.5f;
+
+                            objects.Add(wall);
+                        }
+
+                        // add lights
+                        if (ch == '*' || ch == '^' || ch == '!')
+                        {
+                            Cube wall = new Cube(shader, blockW, blockH, blockD);
+                            wall.Transform.Position = new OpenTK.Mathematics.Vector3(j * blockW, 4.0f, i * blockD);
+                            wall.Transform.Scale *= 0.5f;
+
+                            objects.Add(wall);
+                        }
+
+                        // add solid objects
+                        if ('H' <= ch && ch <= 'N')
+                        {
+                            Cube wall = new Cube(shader, blockW, blockH, blockD);
                             wall.Transform.Position = new OpenTK.Mathematics.Vector3(j * blockW, 0.0f, i * blockD);
+                            wall.Transform.Scale *= 0.5f;
+
+                            objects.Add(wall);
+                        }
+
+                        // add collectables
+                        if ('T' <= ch && ch <= 'Z')
+                        {
+                            Cube wall = new Cube(shader, blockW, blockH, blockD);
+                            wall.Transform.Position = new OpenTK.Mathematics.Vector3(j * blockW, 0.0f, i * blockD);
+                            wall.Transform.Scale *= 0.5f;
+                            wall.Transform.Rotation.Z = 3;
 
                             objects.Add(wall);
                         }
@@ -54,6 +95,7 @@ namespace zpg
                         if (ch == '@')
                         {
                             camPos.X = i * blockW;
+                            camPos.Y = 1.7f; // hard-coded eye-level
                             camPos.Z = j * blockD;
                         }
                     }
