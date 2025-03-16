@@ -5,20 +5,21 @@ namespace zpg
     class Cube : RenderObject
     {
         public Cube(Shader shader, float width, float height, float depth)
-            : this(shader, width, height, depth, Math.Max(width, Math.Max(height, depth)) / 2.0f)
+            : this(shader, width, height, depth, Math.Max(width, Math.Max(height, depth)) / 2)
         { }
 
-        private Cube(Shader shader, float width, float height, float depth, float maxDim)
+        /// its param name="maxDimTimes2" because I need to divide all parameters by 2, to achieve the w/h/d and centered
+        private Cube(Shader shader, float width, float height, float depth, float maxDimTimes2)
             : base(shader, new float[]
             {
-                -width / maxDim, -height / maxDim, -depth / maxDim, // 0
-                 width / maxDim, -height / maxDim, -depth / maxDim, // 1
-                 width / maxDim, -height / maxDim,  depth / maxDim, // 2
-                -width / maxDim, -height / maxDim,  depth / maxDim, // 3
-                -width / maxDim,  height / maxDim, -depth / maxDim, // 4
-                 width / maxDim,  height / maxDim, -depth / maxDim, // 5
-                 width / maxDim,  height / maxDim,  depth / maxDim, // 6
-                -width / maxDim,  height / maxDim,  depth / maxDim  // 7
+                -width / maxDimTimes2, -height / maxDimTimes2, -depth / maxDimTimes2, // 0
+                 width / maxDimTimes2, -height / maxDimTimes2, -depth / maxDimTimes2, // 1
+                 width / maxDimTimes2, -height / maxDimTimes2,  depth / maxDimTimes2, // 2
+                -width / maxDimTimes2, -height / maxDimTimes2,  depth / maxDimTimes2, // 3
+                -width / maxDimTimes2,  height / maxDimTimes2, -depth / maxDimTimes2, // 4
+                 width / maxDimTimes2,  height / maxDimTimes2, -depth / maxDimTimes2, // 5
+                 width / maxDimTimes2,  height / maxDimTimes2,  depth / maxDimTimes2, // 6
+                -width / maxDimTimes2,  height / maxDimTimes2,  depth / maxDimTimes2  // 7
             },
             new uint[]
             {
@@ -36,7 +37,7 @@ namespace zpg
                 7,6,4
             })
         {
-            Transform.Scale = new OpenTK.Mathematics.Vector3(maxDim);
+            Transform.Scale = new OpenTK.Mathematics.Vector3(maxDimTimes2 / 2);
         }
 
         PolygonMode previousPolygonMode;
@@ -46,7 +47,7 @@ namespace zpg
             base.PreRender();
             GL.GetInteger(GetPName.PolygonMode, out int previousMode);
             previousPolygonMode = (PolygonMode)previousMode;
-            GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Line);
+            GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
         }
 
         protected override void PostRender()

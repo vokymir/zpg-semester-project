@@ -35,18 +35,24 @@ namespace zpg
 
             // create two objects
             Shader shader = new Shader("./Shaders/shader.vert", "./Shaders/shader.frag");
-            var obj = new Tetrahedron(shader);
-            obj.Transform.Position = new Vector3(1, 0, 0);
+            /*var obj = new Tetrahedron(shader);*/
+            /*obj.Transform.Position = new Vector3(1, 0, 0);*/
             /*objects.Add(obj);*/
-            obj = new Tetrahedron(shader);
-            obj.Transform.Position = new Vector3(-1, 0, 0);
+            /*obj = new Tetrahedron(shader);*/
+            /*obj.Transform.Position = new Vector3(-1, 0, 0);*/
             /*objects.Add(obj);*/
-
-            var floor = new Floor(shader, 10, 10);
+            /**/
+            /*var floor = new Floor(shader, 10, 10);*/
             /*objects.Add(floor);*/
-            var cube = new Cube(shader, 2, 3, 2);
-            cube.Transform.Position.Z = -9;
-            objects.Add(cube);
+            /*var cube = new Cube(shader, 2, 3, 2);*/
+            /*cube.Transform.Position.Z = -9;*/
+            /*objects.Add(cube);*/
+
+            (camera.Transform.Position, objects) = Level.LoadFile("./Levels/lvl01.txt", shader);
+            if (objects.Count == 0)
+            {
+                return;
+            }
 
             // don't render non-visible objects (based on triangle normal)
             GL.Enable(EnableCap.CullFace);
