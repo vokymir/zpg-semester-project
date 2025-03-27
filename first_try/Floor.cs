@@ -4,7 +4,7 @@ namespace zpg
 {
     class Floor : RenderObject
     {
-        public Floor(Shader shader, float width, float depth) : base(shader,
+        public Floor(Shader shader, Camera camera, float width, float depth) : base(shader, camera,
                 new float[]{
                     0, 0, 0,
                     width, 0, 0,
@@ -14,7 +14,7 @@ namespace zpg
                 }, new uint[]{
                     2, 1, 0,
                     3, 2, 0
-                })
+                }, "./Textures/container2.png", "./Textures/container2_specular.png")
         { }
 
         PolygonMode previousPolygonMode;

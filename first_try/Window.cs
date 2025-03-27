@@ -34,21 +34,9 @@ namespace zpg
             CursorState = CursorState.Grabbed;
 
             // create two objects
-            Shader shader = new Shader("./Shaders/shader.vert", "./Shaders/shader.frag");
-            /*var obj = new Tetrahedron(shader);*/
-            /*obj.Transform.Position = new Vector3(1, 0, 0);*/
-            /*objects.Add(obj);*/
-            /*obj = new Tetrahedron(shader);*/
-            /*obj.Transform.Position = new Vector3(-1, 0, 0);*/
-            /*objects.Add(obj);*/
-            /**/
-            /*var floor = new Floor(shader, 10, 10);*/
-            /*objects.Add(floor);*/
-            /*var cube = new Cube(shader, 2, 3, 2);*/
-            /*cube.Transform.Position.Z = -9;*/
-            /*objects.Add(cube);*/
+            Shader shader = new Shader("./Shaders/shader.vert", "./Shaders/lighting.frag");
 
-            (camera.Transform.Position, objects) = Level.LoadFile("./Levels/lvl01.txt", shader);
+            (camera.Transform.Position, objects) = Level.LoadFile("./Levels/lvl01.txt", shader, camera);
             if (objects.Count == 0)
             {
                 return;
@@ -56,6 +44,7 @@ namespace zpg
 
             // don't render non-visible objects (based on triangle normal)
             GL.Enable(EnableCap.CullFace);
+            GL.Enable(EnableCap.DepthTest);
 
             GL.Enable(EnableCap.DebugOutput);
             GL.Enable(EnableCap.DebugOutputSynchronous);

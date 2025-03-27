@@ -5,7 +5,7 @@ namespace zpg
     class Tetrahedron : RenderObject
     {
 
-        public Tetrahedron(Shader shader) : base(shader,
+        public Tetrahedron(Shader shader, Camera camera) : base(shader, camera,
             new float[]
             {
             -0.7f, 0, 0.7f,
@@ -19,7 +19,7 @@ namespace zpg
             0, 3, 1,
             0, 2, 3,
             1, 3, 2
-            })
+            }, "./Textures/container2.png", "./Textures/container2_specular.png")
         {
         }
 
