@@ -73,6 +73,9 @@ namespace zpg
             _specularMap.Use(TextureUnit.Texture1);
 
             Shader.Use();
+
+            Shader.SetInt("nPointLights", 4);
+
             Shader.SetMatrix4("model", Transform.GetMatrix());
             Shader.SetMatrix4("view", camera.ViewMatrix);
             Shader.SetMatrix4("projection", camera.ProjectionMatrix);
@@ -80,7 +83,7 @@ namespace zpg
             Shader.SetInt("material.diffuse", 0);
             Shader.SetInt("material.specular", 1);
             /*Shader.SetVector3("material.specular", new Vector3(0.5f, 0.5f, 0.5f));*/
-            Shader.SetFloat("material.shininess", 32.0f);
+            Shader.SetFloat("material.shininess", 3200.0f);
 
             Shader.SetVector3("dirLight.direction", new Vector3(-0.2f, -1.0f, -0.3f));
             Shader.SetVector3("dirLight.ambient", new Vector3(0.05f, 0.05f, 0.05f));

@@ -12,6 +12,9 @@ namespace zpg
     {
         private Camera camera;
         private List<RenderObject> objects = new();
+        private DirectionalLight dirLight;
+        private SpotLight spotLight;
+        private List<PointLight> pointLights;
 
 
         public Window(int width, int height, string title) : base(
@@ -31,10 +34,19 @@ namespace zpg
         {
             camera = new Camera(Size.X / (float)Size.Y);
             camera.Transform.Position = new OpenTK.Mathematics.Vector3(0, 1.7f, 0);
+
             CursorState = CursorState.Grabbed;
 
             // create two objects
             Shader shader = new Shader("./Shaders/shader.vert", "./Shaders/lighting.frag");
+
+            dirLight = new DirectionalLight()
+            {
+                Direction = new Vector3(-0.2f, -1.0f, -0.3f),
+                Ambient = new Vector3(0.05f, 0.05f, 0.05f),
+                Diffuse = new Vector3(0.4f, 0.4f, 0.4f),
+                Specular = new Vector3(0.5f, 0.5f, 0.5f)
+            };
 
             (camera.Transform.Position, objects) = Level.LoadFile("./Levels/lvl01.txt", shader, camera);
             if (objects.Count == 0)

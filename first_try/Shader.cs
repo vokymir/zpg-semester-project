@@ -3,7 +3,7 @@ using OpenTK.Mathematics;
 
 namespace zpg
 {
-    class Shader
+    public class Shader
     {
         public readonly int Handle;
         private readonly Dictionary<string, int> _uniformLocations;
