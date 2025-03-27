@@ -14,13 +14,6 @@ namespace zpg
 
         protected Camera _camera;
 
-        protected readonly Vector3[] _pointLightPositions =
-        {
-            new Vector3(0.7f, 0.2f, 2.0f),
-            new Vector3(2.3f, -3.3f, -4.0f),
-            new Vector3(-4.0f, 2.0f, -12.0f),
-            new Vector3(0.0f, 0.0f, -3.0f)
-        };
 
         public RenderObject(Shader shader, Camera camera, float[] vertices, uint[] indices, string diffuseMap, string specularMap)
         {
@@ -67,7 +60,7 @@ namespace zpg
 
         protected virtual void PostRender() { }
 
-        public virtual void Render(Camera camera)
+        public virtual void Render(Camera camera, DirectionalLight dirLight, List<PointLight> pointLights, SpotLight spotlight)
         {
             _diffuseMap.Use(TextureUnit.Texture0);
             _specularMap.Use(TextureUnit.Texture1);
@@ -85,32 +78,14 @@ namespace zpg
             /*Shader.SetVector3("material.specular", new Vector3(0.5f, 0.5f, 0.5f));*/
             Shader.SetFloat("material.shininess", 3200.0f);
 
-            Shader.SetVector3("dirLight.direction", new Vector3(-0.2f, -1.0f, -0.3f));
-            Shader.SetVector3("dirLight.ambient", new Vector3(0.05f, 0.05f, 0.05f));
-            Shader.SetVector3("dirLight.diffuse", new Vector3(0.4f, 0.4f, 0.4f));
-            Shader.SetVector3("dirLight.specular", new Vector3(0.5f, 0.5f, 0.5f));
+            dirLight.Use(Shader, "dirLight");
 
-            for (int i = 0; i < _pointLightPositions.Length; i++)
+            for (int i = 0; i < pointLights.Count; i++)
             {
-                Shader.SetVector3($"pointLights[{i}].position", _pointLightPositions[i]);
-                Shader.SetVector3($"pointLights[{i}].ambient", new Vector3(0.05f, 0.05f, 0.05f));
-                Shader.SetVector3($"pointLights[{i}].diffuse", new Vector3(0.8f, 0.8f, 0.8f));
-                Shader.SetVector3($"pointLights[{i}].specular", new Vector3(1.0f, 1.0f, 1.0f));
-                Shader.SetFloat($"pointLights[{i}].constant", 1.0f);
-                Shader.SetFloat($"pointLights[{i}].linear", 0.09f);
-                Shader.SetFloat($"pointLights[{i}].quadratic", 0.032f);
+                pointLights[i].Use(Shader, $"pointLights[{i}]");
             }
 
-            Shader.SetVector3("spotLight.position", _camera.Transform.Position);
-            Shader.SetVector3("spotLight.direction", _camera.Front);
-            Shader.SetVector3("spotLight.ambient", new Vector3(0.0f, 0.0f, 0.0f));
-            Shader.SetVector3("spotLight.diffuse", new Vector3(1.0f, 1.0f, 1.0f));
-            Shader.SetVector3("spotLight.specular", new Vector3(1.0f, 1.0f, 1.0f));
-            Shader.SetFloat("spotLight.constant", 1.0f);
-            Shader.SetFloat("spotLight.linear", 0.09f);
-            Shader.SetFloat("spotLight.quadratic", 0.032f);
-            Shader.SetFloat("spotLight.cutOff", MathF.Cos(MathHelper.DegreesToRadians(12.5f)));
-            Shader.SetFloat("spotLight.outerCutOff", MathF.Cos(MathHelper.DegreesToRadians(17.5f)));
+            spotlight.Use(Shader, "spotLight");
 
             PreRender();
             Draw();
