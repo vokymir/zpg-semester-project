@@ -3,13 +3,19 @@ using OpenTK.Mathematics;
 
 namespace zpg
 {
+    /// <summary>
+    /// Any renderable object in the scene should inherit from this class.
+    /// Provides abstraction for VAO, VBO, EBO and textures.
+    /// </summary>
     class RenderObject : Entity
     {
         protected Shader Shader;
         protected int VAO, VBO, EBO;
         protected int IndexCount;
 
+        // diffuse map for basic texture
         protected Texture _diffuseMap;
+        // specular map for making the specular lighting be more cool
         protected Texture _specularMap;
 
         protected Camera _camera;
@@ -32,6 +38,9 @@ namespace zpg
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, EBO);
             GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
+            // All must be in format:
+            // position normal  texture coordinates
+            // X,Y,Z,   X,Y,Z,  X,Y
             var position = shader.GetAttribLocation("aPos");
             var normal = shader.GetAttribLocation("aNormal");
             var tex = shader.GetAttribLocation("aTexCoords");
@@ -52,6 +61,7 @@ namespace zpg
 
         protected virtual void PreRender() { }
 
+        // simple draw of VAO, assuming triangles as primitive type
         protected virtual void Draw()
         {
             GL.BindVertexArray(VAO);
@@ -60,24 +70,29 @@ namespace zpg
 
         protected virtual void PostRender() { }
 
-        public virtual void Render(Camera camera, DirectionalLight dirLight, List<PointLight> pointLights, SpotLight spotlight)
+        /// <summary>
+        /// Render this object based on it's camera and shader, and with all lights provided.
+        /// </summary>
+        public virtual void Render(DirectionalLight dirLight, List<PointLight> pointLights, SpotLight spotlight)
         {
-            _diffuseMap.Use(TextureUnit.Texture0);
-            _specularMap.Use(TextureUnit.Texture1);
-
             Shader.Use();
 
-            Shader.SetInt("nPointLights", 4);
+            // set number of point lights in shader. but it cannot be more than the maximum set in there...
+            Shader.SetInt("nPointLights", Math.Min(32, pointLights.Count));
 
+            // set translations
             Shader.SetMatrix4("model", Transform.GetMatrix());
-            Shader.SetMatrix4("view", camera.ViewMatrix);
-            Shader.SetMatrix4("projection", camera.ProjectionMatrix);
+            Shader.SetMatrix4("view", _camera.ViewMatrix);
+            Shader.SetMatrix4("projection", _camera.ProjectionMatrix);
 
+            // set texture maps - and specular for light
+            _diffuseMap.Use(TextureUnit.Texture0);
+            _specularMap.Use(TextureUnit.Texture1);
             Shader.SetInt("material.diffuse", 0);
             Shader.SetInt("material.specular", 1);
-            /*Shader.SetVector3("material.specular", new Vector3(0.5f, 0.5f, 0.5f));*/
             Shader.SetFloat("material.shininess", 3200.0f);
 
+            // Set all lights
             dirLight.Use(Shader, "dirLight");
 
             for (int i = 0; i < pointLights.Count; i++)

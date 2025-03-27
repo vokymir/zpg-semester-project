@@ -48,6 +48,9 @@ namespace zpg
             ).Normalized();
         }
 
+        /// <summary>
+        /// Move accordingly with what was on the keyboard. Take delta time into consideration.
+        /// </summary>
         public void ProcessKeyboard(KeyboardState input, float dT)
         {
             Vector3 direction = Vector3.Zero;

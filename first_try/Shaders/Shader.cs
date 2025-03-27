@@ -85,15 +85,6 @@ namespace zpg
             return GL.GetAttribLocation(Handle, attribName);
         }
 
-        // Uniform setters
-        // Uniforms are variables that can be set by user code, instead of reading them from the VBO.
-        // You use VBOs for vertex-related data, and uniforms for almost everything else.
-
-        // Setting a uniform is almost always the exact same, so I'll explain it here once, instead of in every method:
-        //     1. Bind the program you want to set the uniform on
-        //     2. Get a handle to the location of the uniform with GL.GetUniformLocation.
-        //     3. Use the appropriate GL.Uniform* function to set the uniform.
-
         /// <summary>
         /// Set a uniform int on this shader.
         /// </summary>
