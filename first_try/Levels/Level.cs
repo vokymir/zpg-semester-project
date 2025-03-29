@@ -46,6 +46,7 @@ namespace zpg
                         {
                             Cube wall = new Cube(shader, blockW, blockH, blockD, camera);
                             wall.Transform.Position = new OpenTK.Mathematics.Vector3(j * blockW, blockH / 2, i * blockD);
+                            wall.UpdateCollisionCube();
 
                             objects.Add(wall);
                         }

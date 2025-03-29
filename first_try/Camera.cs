@@ -22,7 +22,19 @@ namespace zpg
         public Matrix4 ViewMatrix => Matrix4.LookAt(this.Transform.Position, Transform.Position + Front, Up);
         public Matrix4 ProjectionMatrix { get; private set; }
 
-        public Camera(float aspectRatio) => Resize(aspectRatio);
+        public CollisionCube CollisionCube { get; private set; } = new CollisionCube()
+        {
+            Center = new Vector3(0, 0, 0),
+            Xover2 = 0.5f,
+            Yover2 = 2.0f,
+            Zover2 = 0.5f
+        };
+
+        public Camera(float aspectRatio)
+        {
+            Transform.PropertyChanged += (s, e) => CollisionCube.Center = Transform.Position;
+            Resize(aspectRatio);
+        }
 
         public void Resize(float aspectRatio) => this.ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver2, aspectRatio, 0.1f, 100.0f);
 
@@ -51,8 +63,11 @@ namespace zpg
         /// <summary>
         /// Move accordingly with what was on the keyboard. Take delta time into consideration.
         /// </summary>
-        public void ProcessKeyboard(KeyboardState input, float dT)
+        public void ProcessKeyboard(KeyboardState input, float dT, List<RenderObject> objects)
         {
+            if (input.IsKeyDown(Keys.X))
+                Console.WriteLine(CollisionCube);
+
             Vector3 direction = Vector3.Zero;
 
             if (input.IsKeyDown(Keys.W)) direction += Front;
@@ -65,6 +80,15 @@ namespace zpg
             if (direction.LengthSquared > 0)
             {
                 Transform.Position += direction.Normalized() * speed * dT;
+
+                foreach (var o in objects)
+                {
+                    if (CollisionCube.DoesCollide(o.CollisionCube))
+                    {
+                        Transform.Position -= direction.Normalized() * speed * dT;
+                        break;
+                    }
+                }
             }
         }
 

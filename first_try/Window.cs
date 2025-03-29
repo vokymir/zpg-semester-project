@@ -5,27 +5,23 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Input;
 using OpenTK.Mathematics;
 
-
 namespace zpg
 {
     public class Window : GameWindow
     {
         // main camera
-        private Camera _camera;
+        private Camera _camera = new(1.0f);
         // all objects in the scene
         private List<RenderObject> _objects = new();
         // lights
-        private DirectionalLight _dirLight;
-        private SpotLight _spotLight;
+        private DirectionalLight _dirLight = new();
+        private SpotLight _spotLight = new();
         private List<PointLight> _pointLights = new();
 
         // TEMPORARY position of lights
         private readonly Vector3[] _pointLightPositions =
         {
             new Vector3(0.0f, 0.0f, 0.0f),
-            new Vector3(0.7f, 0.2f, 2.0f),
-            new Vector3(2.3f, -3.3f, -4.0f),
-            new Vector3(-4.0f, 2.0f, -12.0f),
             new Vector3(0.0f, 0.0f, -3.0f)
         };
 
@@ -98,7 +94,7 @@ namespace zpg
                 };
             }
 
-            (_camera.Transform.Position, _objects) = Level.LoadFile("./Levels/lvl01.txt", shader, _camera);
+            (_camera.Transform.Position, _objects) = Level.LoadFile("./Levels/lvl00.txt", shader, _camera);
             if (_objects.Count == 0)
             {
                 return;
@@ -143,7 +139,7 @@ namespace zpg
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
             var input = KeyboardState;
-            _camera.ProcessKeyboard(input, (float)args.Time);
+            _camera.ProcessKeyboard(input, (float)args.Time, this._objects);
 
             if (input.IsKeyPressed(Keys.Escape) || input.IsKeyPressed(Keys.CapsLock))
             {
@@ -152,6 +148,14 @@ namespace zpg
             if (input.IsKeyPressed(Keys.Tab))
             {
                 CursorState = CursorState == CursorState.Grabbed ? CursorState.Normal : CursorState.Grabbed;
+            }
+
+            if (input.IsKeyPressed(Keys.P))
+            {
+                foreach (var o in _objects)
+                {
+                    Console.WriteLine(o.CollisionCube);
+                }
             }
         }
 

@@ -24,6 +24,15 @@ namespace zpg
         {
             // set the scale so it fits the dimensions given by user - these are easily changable elsewhere.
             Transform.Scale = new Vector3(maxDimOver2 / 2);
+            CollisionCube.Xover2 = width * 0.5f * Transform.Scale.X;
+            CollisionCube.Yover2 = height * 0.5f * Transform.Scale.Y;
+            CollisionCube.Zover2 = depth * 0.5f * Transform.Scale.Z;
+            CollisionCube.Center = Transform.Position;
+        }
+
+        public void UpdateCollisionCube()
+        {
+            CollisionCube.Center = Transform.Position;
         }
 
         private static float[] GenerateVertices(float width, float height, float depth, float maxDimOver2)
