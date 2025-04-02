@@ -81,6 +81,7 @@ namespace zpg
 
                 _spotLight = new SpotLight()
                 {
+                    // position and direction are changed on render frame
                     Position = _camera.Transform.Position,
                     Direction = _camera.Front,
                     Ambient = new Vector3(0.0f, 0.0f, 0.0f),
@@ -94,7 +95,7 @@ namespace zpg
                 };
             }
 
-            (_camera.Transform.Position, _objects) = Level.LoadFile("./Levels/lvl00.txt", shader, _camera);
+            (_camera.Transform.Position, _objects) = Level.LoadFile("./Levels/lvl01.txt", shader, _camera);
             if (_objects.Count == 0)
             {
                 return;
@@ -128,8 +129,9 @@ namespace zpg
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             // update spotlight based on camera position
-            _spotLight.Position = _camera.Transform.Position;
-            _spotLight.Direction = _camera.Front;
+            // respect assignment Y coord and depression
+            _spotLight.Position = _camera.Transform.Position + (0f, 0.35f, 0f);
+            _spotLight.Direction = _camera.Front + (0.0f, -MathHelper.DegreesToRadians(2), 0.0f);
 
             // render all objects
             foreach (var obj in _objects) obj.Render(_dirLight, _pointLights, _spotLight);

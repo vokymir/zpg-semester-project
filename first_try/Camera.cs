@@ -6,7 +6,7 @@ namespace zpg
 
     class Camera : Entity
     {
-        private float speed = 3.0f;
+        private float speed = 1.4f;
 
         private float pitch = 0.0f;
         private float yaw = -90.0f;
