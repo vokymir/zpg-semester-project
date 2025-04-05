@@ -80,29 +80,30 @@ namespace zpg
                         }
                     }
                 }
-                for (int x = -1; x < width + 1; x++)
+                string voidTexturePath = "./Textures/void.png";
+                for (int x = 0; x < width; x++)
                 {
-                    Cube wall = new Cube(shader, blockW, blockH, blockD, camera);
+                    Cube wall = new Cube(shader, blockW, blockH, blockD, camera, voidTexturePath);
                     wall.Transform.Position = new OpenTK.Mathematics.Vector3(x * blockW, blockH / 2, -1 * blockD);
                     wall.UpdateCollisionCube();
 
                     objects.Add(wall);
 
-                    Cube wall2 = new Cube(shader, blockW, blockH, blockD, camera);
+                    Cube wall2 = new Cube(shader, blockW, blockH, blockD, camera, voidTexturePath);
                     wall2.Transform.Position = new OpenTK.Mathematics.Vector3(x * blockW, blockH / 2, depth * blockD);
                     wall2.UpdateCollisionCube();
 
                     objects.Add(wall2);
                 }
-                for (int z = -1; z < depth + 1; z++)
+                for (int z = 0; z < depth; z++)
                 {
-                    Cube wall = new Cube(shader, blockW, blockH, blockD, camera);
+                    Cube wall = new Cube(shader, blockW, blockH, blockD, camera, voidTexturePath);
                     wall.Transform.Position = new OpenTK.Mathematics.Vector3(-1 * blockW, blockH / 2, z * blockD);
                     wall.UpdateCollisionCube();
 
                     objects.Add(wall);
 
-                    Cube wall2 = new Cube(shader, blockW, blockH, blockD, camera);
+                    Cube wall2 = new Cube(shader, blockW, blockH, blockD, camera, voidTexturePath);
                     wall2.Transform.Position = new OpenTK.Mathematics.Vector3(width * blockW, blockH / 2, z * blockD);
                     wall2.UpdateCollisionCube();
 

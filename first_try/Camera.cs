@@ -73,7 +73,7 @@ namespace zpg
             if (input.IsKeyDown(Keys.D)) direction += Vector3.Cross(Front, Up).Normalized();
 
             // avoid flying
-            direction.Y = 0;
+            // direction.Y = 0;
 
             if (direction.LengthSquared > 0)
             {

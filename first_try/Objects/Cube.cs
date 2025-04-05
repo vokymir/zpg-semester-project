@@ -52,10 +52,10 @@ namespace zpg
                 -hx,  hy,  hz,   0f, 0f, 1f,   0f, 1f,  // 3
 
                 // Back face (normal: 0,0,-1)
-                -hx, -hy, -hz,   0f, 0f, -1f,  0f, 0f,  // 4
-                 hx, -hy, -hz,   0f, 0f, -1f,  1f, 0f,  // 5
-                 hx,  hy, -hz,   0f, 0f, -1f,  1f, 1f,  // 6
-                -hx,  hy, -hz,   0f, 0f, -1f,  0f, 1f,  // 7
+                -hx, -hy, -hz,   0f, 0f, -1f,  1f, 0f,  // 4
+                 hx, -hy, -hz,   0f, 0f, -1f,  0f, 0f,  // 5
+                 hx,  hy, -hz,   0f, 0f, -1f,  0f, 1f,  // 6
+                -hx,  hy, -hz,   0f, 0f, -1f,  1f, 1f,  // 7
 
                 // Left face (normal: -1,0,0)
                 -hx, -hy, -hz,  -1f, 0f, 0f,   0f, 0f,  // 8
