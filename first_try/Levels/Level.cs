@@ -25,7 +25,7 @@ namespace zpg
                 // return if map invalid
                 if (width < 1 || depth < 1)
                 {
-                    return (camPos, new List<RenderObject>());
+                    throw new ApplicationException($"Invalid map dimensions while trying to load {path}");
                 }
 
                 for (int i = 0; i < depth; i++)
@@ -35,7 +35,7 @@ namespace zpg
                     // if invalid input
                     if (line is null)
                     {
-                        return (camPos, new List<RenderObject>());
+                        throw new ApplicationException($"Invalid line in map file while trying to load line {i} in {path}");
                     }
 
                     for (int j = 0; j < line.Length; j++)

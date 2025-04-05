@@ -17,6 +17,7 @@ namespace zpg
         private DirectionalLight _dirLight = new();
         private SpotLight _spotLight = new();
         private List<PointLight> _pointLights = new();
+        private string levelPath;
 
         // TEMPORARY position of lights
         private readonly Vector3[] _pointLightPositions =
@@ -28,7 +29,7 @@ namespace zpg
         /// <summary>
         /// Create a new Window based on GameWindow.
         /// </summary>
-        public Window(int width, int height, string title) : base(
+        public Window(int width, int height, string title, string levelPath) : base(
             GameWindowSettings.Default,
             new NativeWindowSettings()
             {
@@ -39,10 +40,10 @@ namespace zpg
                 Title = title
             }
             )
-        { }
+        { this.levelPath = levelPath; }
 
         /// <summary>
-        /// Initialize camera, shader, lights, load level (TEMPORARY) and enable cullface, depthtest, debug output etc.
+        /// Initialize camera, shader, lights, load level and enable cullface, depthtest, debug output etc.
         /// </summary>
         protected override void OnLoad()
         {
@@ -95,11 +96,7 @@ namespace zpg
                 };
             }
 
-            (_camera.Transform.Position, _objects) = Level.LoadFile("./Levels/lvl00.txt", shader, _camera);
-            if (_objects.Count == 0)
-            {
-                return;
-            }
+            LoadLevel(levelPath, shader);
 
             // don't render non-visible objects (based on triangle normal)
             GL.Enable(EnableCap.CullFace);
@@ -164,6 +161,19 @@ namespace zpg
         protected override void OnMouseMove(MouseMoveEventArgs e)
         {
             _camera.OnMouseMove(e.Position);
+        }
+
+        public void LoadLevel(string path, Shader shader)
+        {
+            try
+            {
+                (_camera.Transform.Position, _objects) = Level.LoadFile(levelPath, shader, _camera);
+            }
+            catch
+            {
+                Console.WriteLine($"Invalid map file on path: {path}");
+                Close();
+            }
         }
     }
 }

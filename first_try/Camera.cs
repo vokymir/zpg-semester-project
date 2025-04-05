@@ -73,7 +73,7 @@ namespace zpg
             if (input.IsKeyDown(Keys.D)) direction += Vector3.Cross(Front, Up).Normalized();
 
             // avoid flying
-            // direction.Y = 0;
+            direction.Y = 0;
 
             if (direction.LengthSquared > 0)
             {
@@ -84,7 +84,7 @@ namespace zpg
                 {
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
-                        Console.WriteLine($"Does collide on {this.CollisionCube} \nwith {o.CollisionCube}");
+                        // Console.WriteLine($"Does collide on {this.CollisionCube} \nwith {o.CollisionCube}");
                         float maxXposition = Transform.Position.X;
                         float maxZposition = Transform.Position.Z;
                         // check collision on X axis
@@ -106,7 +106,7 @@ namespace zpg
                                 maxZposition = o.CollisionCube.Center.Z - o.CollisionCube.Zover2 - CollisionCube.Zover2;
                         }
                         Transform.Position = new Vector3(maxXposition, Transform.Position.Y, maxZposition);
-                        Console.WriteLine($"Result: {this.Transform.Position}");
+                        // Console.WriteLine($"Result: {this.Transform.Position}");
                     }
                 }
             }
