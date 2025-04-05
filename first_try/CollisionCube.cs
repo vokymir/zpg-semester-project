@@ -17,7 +17,6 @@ namespace zpg
 
             if (xOverlap && yOverlap && zOverlap)
             {
-                Console.WriteLine($"Does collide with {this}");
                 return true;
             }
             return false;

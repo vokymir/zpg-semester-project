@@ -75,18 +75,41 @@ namespace zpg
             if (input.IsKeyDown(Keys.A)) direction -= Vector3.Cross(Front, Up).Normalized();
             if (input.IsKeyDown(Keys.D)) direction += Vector3.Cross(Front, Up).Normalized();
 
+            // avoid flying
             direction.Y = 0;
 
             if (direction.LengthSquared > 0)
             {
-                Transform.Position += direction.Normalized() * speed * dT;
+                var move = direction.Normalized() * speed * dT;
+                Transform.Position += move;
 
                 foreach (var o in objects)
                 {
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
-                        Transform.Position -= direction.Normalized() * speed * dT;
-                        break;
+                        Console.WriteLine($"Does collide on {this.CollisionCube} \nwith {o.CollisionCube}");
+                        float maxXposition = Transform.Position.X;
+                        float maxZposition = Transform.Position.Z;
+                        // check collision on X axis
+                        Transform.Position += new Vector3(0, 0, -move.Z);
+                        if (CollisionCube.DoesCollide(o.CollisionCube))
+                        {
+                            if (CollisionCube.Center.X > o.CollisionCube.Center.X)
+                                maxXposition = o.CollisionCube.Center.X + o.CollisionCube.Xover2 + CollisionCube.Xover2;
+                            if (CollisionCube.Center.X <= o.CollisionCube.Center.X)
+                                maxXposition = o.CollisionCube.Center.X - o.CollisionCube.Xover2 - CollisionCube.Xover2;
+                        }
+                        // check collision on Z axis
+                        Transform.Position += new Vector3(-move.X, 0, move.Z);
+                        if (CollisionCube.DoesCollide(o.CollisionCube))
+                        {
+                            if (CollisionCube.Center.Z > o.CollisionCube.Center.Z)
+                                maxZposition = o.CollisionCube.Center.Z + o.CollisionCube.Zover2 + CollisionCube.Zover2;
+                            if (CollisionCube.Center.Z <= o.CollisionCube.Center.Z)
+                                maxZposition = o.CollisionCube.Center.Z - o.CollisionCube.Zover2 - CollisionCube.Zover2;
+                        }
+                        Transform.Position = new Vector3(maxXposition, Transform.Position.Y, maxZposition);
+                        Console.WriteLine($"Result: {this.Transform.Position}");
                     }
                 }
             }

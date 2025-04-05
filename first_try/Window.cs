@@ -88,8 +88,8 @@ namespace zpg
                     Diffuse = new Vector3(1.0f, 1.0f, 1.0f),
                     Specular = new Vector3(1.0f, 1.0f, 1.0f),
                     Constant = 1.0f,
-                    Linear = 0.09f,
-                    Quadratic = 0.032f,
+                    Linear = 0.045f,
+                    Quadratic = 0.0075f,
                     CutOff = MathF.Cos(MathHelper.DegreesToRadians(12.5f)),
                     OuterCutOff = MathF.Cos(MathHelper.DegreesToRadians(17.5f))
                 };
