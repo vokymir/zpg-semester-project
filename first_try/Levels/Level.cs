@@ -74,9 +74,9 @@ namespace zpg
                         // add camera position
                         if (ch == '@')
                         {
-                            camPos.X = i * blockW;
+                            camPos.X = j * blockW;
                             camPos.Y = 1.7f; // hard-coded eye-level
-                            camPos.Z = j * blockD;
+                            camPos.Z = i * blockD;
                         }
                     }
                 }
