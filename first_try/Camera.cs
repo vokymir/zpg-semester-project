@@ -65,9 +65,6 @@ namespace zpg
         /// </summary>
         public void ProcessKeyboard(KeyboardState input, float dT, List<RenderObject> objects)
         {
-            if (input.IsKeyDown(Keys.X))
-                Console.WriteLine(CollisionCube);
-
             Vector3 direction = Vector3.Zero;
 
             if (input.IsKeyDown(Keys.W)) direction += Front;

@@ -7,6 +7,7 @@ namespace zpg
         {
             List<RenderObject> objects = new();
             OpenTK.Mathematics.Vector3 camPos = new OpenTK.Mathematics.Vector3();
+            camPos.Y = 1.7f; // hard-coded eye-level
 
             float blockW = 2.0f;
             float blockH = 3.0f;
@@ -75,10 +76,37 @@ namespace zpg
                         if (ch == '@')
                         {
                             camPos.X = j * blockW;
-                            camPos.Y = 1.7f; // hard-coded eye-level
                             camPos.Z = i * blockD;
                         }
                     }
+                }
+                for (int x = -1; x < width + 1; x++)
+                {
+                    Cube wall = new Cube(shader, blockW, blockH, blockD, camera);
+                    wall.Transform.Position = new OpenTK.Mathematics.Vector3(x * blockW, blockH / 2, -1 * blockD);
+                    wall.UpdateCollisionCube();
+
+                    objects.Add(wall);
+
+                    Cube wall2 = new Cube(shader, blockW, blockH, blockD, camera);
+                    wall2.Transform.Position = new OpenTK.Mathematics.Vector3(x * blockW, blockH / 2, depth * blockD);
+                    wall2.UpdateCollisionCube();
+
+                    objects.Add(wall2);
+                }
+                for (int z = -1; z < depth + 1; z++)
+                {
+                    Cube wall = new Cube(shader, blockW, blockH, blockD, camera);
+                    wall.Transform.Position = new OpenTK.Mathematics.Vector3(-1 * blockW, blockH / 2, z * blockD);
+                    wall.UpdateCollisionCube();
+
+                    objects.Add(wall);
+
+                    Cube wall2 = new Cube(shader, blockW, blockH, blockD, camera);
+                    wall2.Transform.Position = new OpenTK.Mathematics.Vector3(width * blockW, blockH / 2, z * blockD);
+                    wall2.UpdateCollisionCube();
+
+                    objects.Add(wall2);
                 }
             }
 

@@ -95,7 +95,7 @@ namespace zpg
                 };
             }
 
-            (_camera.Transform.Position, _objects) = Level.LoadFile("./Levels/lvl01.txt", shader, _camera);
+            (_camera.Transform.Position, _objects) = Level.LoadFile("./Levels/lvl02.txt", shader, _camera);
             if (_objects.Count == 0)
             {
                 return;
