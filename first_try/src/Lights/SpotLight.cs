@@ -2,6 +2,7 @@ using OpenTK.Mathematics;
 
 namespace zpg
 {
+    // player's flashlight
     public class SpotLight : Light
     {
         public Vector3 Position { get; set; }

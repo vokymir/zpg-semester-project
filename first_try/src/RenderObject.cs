@@ -19,6 +19,7 @@ namespace zpg
         protected Texture _specularMap;
 
         protected Camera _camera;
+
         public CollisionCube CollisionCube { get; private set; } = new();
 
 

@@ -35,6 +35,7 @@ namespace zpg
             CollisionCube.Center = Transform.Position;
         }
 
+        // this could be loaded from file, but I started with this - maybe in the other assignment part I will implement model loading...
         private static float[] GenerateVertices(float width, float height, float depth, float maxDimOver2)
         {
             float hx = width / maxDimOver2;

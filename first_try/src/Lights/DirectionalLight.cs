@@ -2,6 +2,7 @@ using OpenTK.Mathematics;
 
 namespace zpg
 {
+    // "Sun" like light
     public class DirectionalLight : Light
     {
         public Vector3 Direction { get; set; }

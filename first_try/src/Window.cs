@@ -2,7 +2,6 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using OpenTK.Input;
 using OpenTK.Mathematics;
 
 namespace zpg
@@ -17,13 +16,18 @@ namespace zpg
         private DirectionalLight _dirLight = new();
         private SpotLight _spotLight = new();
         private List<PointLight> _pointLights = new();
-        private string levelPath;
+        // stored level path for future use
+        private string _levelPath;
+        // timer and fps for calculating fps
+        private System.Timers.Timer _timer = new System.Timers.Timer(1000);
+        private int _fps;
+        // window Title contains also the FPS, so this stores what's before
+        private string _titlePrefix;
 
         // TEMPORARY position of lights
         private readonly Vector3[] _pointLightPositions =
         {
-            new Vector3(0.0f, 0.0f, 0.0f),
-            new Vector3(0.0f, 0.0f, -3.0f)
+            new Vector3(0.0f, 2.0f, 0.0f),
         };
 
         /// <summary>
@@ -40,7 +44,25 @@ namespace zpg
                 Title = title
             }
             )
-        { this.levelPath = levelPath; }
+        {
+            this._levelPath = levelPath;
+            this._titlePrefix = title;
+            SetTimer();
+        }
+
+        /// <summary>
+        /// Set timer to count FPS and display them.
+        /// </summary>
+        private void SetTimer()
+        {
+            _timer.Elapsed += (s, e) =>
+            {
+                Title = _titlePrefix + " | FPS: " + _fps.ToString();
+                _fps = 0;
+            };
+            _timer.AutoReset = true;
+            _timer.Enabled = true;
+        }
 
         /// <summary>
         /// Initialize camera, shader, lights, load level and enable cullface, depthtest, debug output etc.
@@ -96,7 +118,7 @@ namespace zpg
                 };
             }
 
-            LoadLevel(levelPath, shader);
+            LoadLevel(_levelPath, shader);
 
             // don't render non-visible objects (based on triangle normal)
             GL.Enable(EnableCap.CullFace);
@@ -126,13 +148,16 @@ namespace zpg
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             // update spotlight based on camera position
-            // respect assignment Y coord and depression
+            // respect assignment: Y coord is 2.05 meters above ground and depression is 2 degrees
             _spotLight.Position = _camera.Transform.Position + (0f, 0.35f, 0f);
             _spotLight.Direction = _camera.Front + (0.0f, -MathHelper.DegreesToRadians(2), 0.0f);
 
             // render all objects
             foreach (var obj in _objects) obj.Render(_dirLight, _pointLights, _spotLight);
             SwapBuffers();
+
+            // count the fps
+            _fps++;
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -140,21 +165,15 @@ namespace zpg
             var input = KeyboardState;
             _camera.ProcessKeyboard(input, (float)args.Time, this._objects);
 
+            // close game - CapsLk because of my keyboard mapping sometimes fails
             if (input.IsKeyPressed(Keys.Escape) || input.IsKeyPressed(Keys.CapsLock))
             {
                 Close();
             }
+            // release/grab mouse
             if (input.IsKeyPressed(Keys.Tab))
             {
                 CursorState = CursorState == CursorState.Grabbed ? CursorState.Normal : CursorState.Grabbed;
-            }
-
-            if (input.IsKeyPressed(Keys.P))
-            {
-                foreach (var o in _objects)
-                {
-                    Console.WriteLine(o.CollisionCube);
-                }
             }
         }
 
@@ -163,11 +182,14 @@ namespace zpg
             _camera.OnMouseMove(e.Position);
         }
 
+        /// <summary>
+        /// Try to load the level from path. If not successfull, close the app.
+        /// </summary>
         public void LoadLevel(string path, Shader shader)
         {
             try
             {
-                (_camera.Transform.Position, _objects) = Level.LoadFile(levelPath, shader, _camera);
+                (_camera.Transform.Position, _objects) = Level.LoadFile(_levelPath, shader, _camera);
             }
             catch
             {

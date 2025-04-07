@@ -11,8 +11,10 @@ namespace zpg
         private float pitch = 0.0f;
         private float yaw = -90.0f;
 
+        // mouse sensitivity
         private float sensitivity = 0.1f;
 
+        // to avoid jump on first frame
         private bool firstMouse = true;
         private Vector2 lastMousePosition;
 
@@ -32,14 +34,19 @@ namespace zpg
 
         public Camera(float aspectRatio)
         {
+            // make collision cube move with camera automagically
             Transform.PropertyChanged += (s, e) => CollisionCube.Center = Transform.Position;
             Resize(aspectRatio);
         }
 
         public void Resize(float aspectRatio) => this.ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver2, aspectRatio, 0.1f, 100.0f);
 
+        /// <summary>
+        /// Look around based on mouse position.
+        /// </summary>
         public void OnMouseMove(Vector2 mPos)
         {
+            // to avoid jump on first frame
             if (firstMouse)
             {
                 firstMouse = false;
@@ -58,6 +65,7 @@ namespace zpg
                 MathF.Sin(MathHelper.DegreesToRadians(pitch)),
                 MathF.Sin(MathHelper.DegreesToRadians(yaw)) * MathF.Cos(MathHelper.DegreesToRadians(pitch))
             ).Normalized();
+            // More info about this math at: https://opentk.net/learn/chapter1/9-camera
         }
 
         /// <summary>
@@ -75,39 +83,48 @@ namespace zpg
             // avoid flying
             direction.Y = 0;
 
-            if (direction.LengthSquared > 0)
+            // guard
+            if (direction.LengthSquared <= 0)
             {
-                var move = direction.Normalized() * speed * dT;
-                Transform.Position += move;
+                return;
+            }
 
-                foreach (var o in objects)
+            // what move would the player like to make - try it
+            var move = direction.Normalized() * speed * dT;
+            Transform.Position += move;
+
+            // check for collision with each object
+            foreach (var o in objects)
+            {
+                if (CollisionCube.DoesCollide(o.CollisionCube))
                 {
+                    // if collide, check both horizontal axis for the maximal position that could be done
+                    // in the direction the player wants to go
+                    // assume that there is no collision and then subtract to avoid collisions
+                    float maxXposition = Transform.Position.X;
+                    float maxZposition = Transform.Position.Z;
+
+                    // check collision on X axis (forget Z)
+                    Transform.Position += new Vector3(0, 0, -move.Z);
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
-                        // Console.WriteLine($"Does collide on {this.CollisionCube} \nwith {o.CollisionCube}");
-                        float maxXposition = Transform.Position.X;
-                        float maxZposition = Transform.Position.Z;
-                        // check collision on X axis
-                        Transform.Position += new Vector3(0, 0, -move.Z);
-                        if (CollisionCube.DoesCollide(o.CollisionCube))
-                        {
-                            if (CollisionCube.Center.X > o.CollisionCube.Center.X)
-                                maxXposition = o.CollisionCube.Center.X + o.CollisionCube.Xover2 + CollisionCube.Xover2;
-                            if (CollisionCube.Center.X <= o.CollisionCube.Center.X)
-                                maxXposition = o.CollisionCube.Center.X - o.CollisionCube.Xover2 - CollisionCube.Xover2;
-                        }
-                        // check collision on Z axis
-                        Transform.Position += new Vector3(-move.X, 0, move.Z);
-                        if (CollisionCube.DoesCollide(o.CollisionCube))
-                        {
-                            if (CollisionCube.Center.Z > o.CollisionCube.Center.Z)
-                                maxZposition = o.CollisionCube.Center.Z + o.CollisionCube.Zover2 + CollisionCube.Zover2;
-                            if (CollisionCube.Center.Z <= o.CollisionCube.Center.Z)
-                                maxZposition = o.CollisionCube.Center.Z - o.CollisionCube.Zover2 - CollisionCube.Zover2;
-                        }
-                        Transform.Position = new Vector3(maxXposition, Transform.Position.Y, maxZposition);
-                        // Console.WriteLine($"Result: {this.Transform.Position}");
+                        if (CollisionCube.Center.X > o.CollisionCube.Center.X)
+                            maxXposition = o.CollisionCube.Center.X + o.CollisionCube.Xover2 + CollisionCube.Xover2;
+                        if (CollisionCube.Center.X <= o.CollisionCube.Center.X)
+                            maxXposition = o.CollisionCube.Center.X - o.CollisionCube.Xover2 - CollisionCube.Xover2;
                     }
+
+                    // check collision on Z axis (return to original position, then forget X)
+                    Transform.Position += new Vector3(-move.X, 0, move.Z);
+                    if (CollisionCube.DoesCollide(o.CollisionCube))
+                    {
+                        if (CollisionCube.Center.Z > o.CollisionCube.Center.Z)
+                            maxZposition = o.CollisionCube.Center.Z + o.CollisionCube.Zover2 + CollisionCube.Zover2;
+                        if (CollisionCube.Center.Z <= o.CollisionCube.Center.Z)
+                            maxZposition = o.CollisionCube.Center.Z - o.CollisionCube.Zover2 - CollisionCube.Zover2;
+                    }
+
+                    Transform.Position = new Vector3(maxXposition, Transform.Position.Y, maxZposition);
                 }
             }
         }

@@ -27,6 +27,7 @@ namespace zpg
                    Matrix4.CreateTranslation(_position);
         }
 
+        // Property changed is used on Camera - it's collision cube changes position based on the Camera transform
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

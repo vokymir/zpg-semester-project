@@ -3,6 +3,11 @@ namespace zpg
 {
     class Level
     {
+        /// <summary>
+        /// Load map from file, with given shader and camera.
+        /// Returns new position for camera and list of objects to render in the scene.
+        /// Throws exceptions if file invalid, assumes file exists.
+        /// </summary>
         public static (OpenTK.Mathematics.Vector3, List<RenderObject>) LoadFile(string path, Shader shader, Camera camera)
         {
             List<RenderObject> objects = new();
@@ -22,22 +27,22 @@ namespace zpg
                 float.TryParse(wh[0], out float width);
                 float.TryParse(wh[1], out float depth);
 
-                // return if map invalid
                 if (width < 1 || depth < 1)
                 {
                     throw new ApplicationException($"Invalid map dimensions while trying to load {path}");
                 }
 
+                // for each line
                 for (int i = 0; i < depth; i++)
                 {
                     line = sr.ReadLine();
 
-                    // if invalid input
                     if (line is null)
                     {
                         throw new ApplicationException($"Invalid line in map file while trying to load line {i} in {path}");
                     }
 
+                    // for each char
                     for (int j = 0; j < line.Length; j++)
                     {
                         char ch = line[j];
@@ -80,7 +85,12 @@ namespace zpg
                         }
                     }
                 }
+
+                // This part serves to protect player leaving the map.
+                // Generate cube walls around the whole map.
+                // Use different texture (e.g. stars in the space) to indicate end of map.
                 string voidTexturePath = "./Textures/void.png";
+                // for X and Z axis, in both generate two wall - on one and the other side = only difference is in the Z/X coordinate
                 for (int x = 0; x < width; x++)
                 {
                     Cube wall = new Cube(shader, blockW, blockH, blockD, camera, voidTexturePath);

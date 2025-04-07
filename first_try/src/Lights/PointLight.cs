@@ -2,6 +2,7 @@ using OpenTK.Mathematics;
 
 namespace zpg
 {
+    // torch-like light
     public class PointLight : Light
     {
         public Vector3 Position { get; set; }
