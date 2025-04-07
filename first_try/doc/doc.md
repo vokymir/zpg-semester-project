@@ -4,7 +4,7 @@ Jakub Vokoun, 5. dubna 2025, javok@students.zcu.cz, A23B0235P
 
 ## Spuštění
 
-V příkazové řádce ve složce *src* spustěte *dotnet run*.
+V příkazové řádce ve složce *src* spustit *dotnet run*.
 Lze předat prvním parametrem cestu k mapě (relativní vůči aktuální cestě).
 Při absenci parametru se načte výchozí mapa ve složce *src/Levels*.
 
@@ -29,12 +29,12 @@ knihovny Timers vytvořený časovač každou vteřinu zobrazí FPS a opět je v
 Pokud uživatel při spuštění aplikace předá prvním parametrem cestu k souboru
 s mapou, pokusí se tuto mapu aplikace načíst. Pokud to nebude možné, aplikace
 skončí a vypíše chybu. Pro zabránění hráči opustit mapu i v místech kde není stěna
-slouží přidání stěny z krychlí po všech okrajích mapy. Tyto krychle mají jinou texturu,
-aby tak indikovaly konec mapy, interakce (sliding) s okrajem mapy je tedy již
-implementovaný v kolizích.
+slouží přidání stěny z krychlí po takových okrajích mapy, kde chybí zeď. Tyto krychle
+mají jinou texturu, aby tak indikovaly konec mapy, interakce (sliding) s okrajem
+mapy je tedy již implementovaný v kolizích.
 
 ## Povolení užití
 
 Souhlasím s vystavením této semestrální práce na stránkách katedry informatiky
 a výpočetní techniky a jejímu využití pro prezentaci pracoviště.
-Nekontroloval jsem ale autorská práva textur.
+Nekontroloval jsem ale autorská práva textur, tuto zodpovědnost přenechávám katedře.

@@ -14,6 +14,9 @@ namespace zpg
             OpenTK.Mathematics.Vector3 camPos = new OpenTK.Mathematics.Vector3();
             camPos.Y = 1.7f; // hard-coded eye-level
 
+            string voidTextureDiffusePath = "./Textures/void.png";
+            string voidTextureSpecularPath = "./Textures/void_specular.png";
+
             float blockW = 2.0f;
             float blockH = 3.0f;
             float blockD = 2.0f;
@@ -46,15 +49,30 @@ namespace zpg
                     for (int j = 0; j < line.Length; j++)
                     {
                         char ch = line[j];
+                        bool addedWall = false;
 
                         // add all walls
                         if ('o' <= ch && ch <= 'z')
                         {
-                            Cube wall = new Cube(shader, blockW, blockH, blockD, camera);
-                            wall.Transform.Position = new OpenTK.Mathematics.Vector3(j * blockW, blockH / 2, i * blockD);
-                            wall.UpdateCollisionCube();
-
-                            objects.Add(wall);
+                            Level.AddWall(shader, blockW, blockH, blockD, camera, j, i, objects);
+                            addedWall = true;
+                        }
+                        // add end-of-map walls to the edge of map
+                        if (!addedWall && i == 0)
+                        {
+                            Level.AddWall(shader, blockW, blockH, blockD, camera, j, -1, objects, false, voidTextureDiffusePath, voidTextureSpecularPath);
+                        }
+                        if (!addedWall && i == depth - 1)
+                        {
+                            Level.AddWall(shader, blockW, blockH, blockD, camera, j, depth, objects, false, voidTextureDiffusePath, voidTextureSpecularPath);
+                        }
+                        if (!addedWall && j == 0)
+                        {
+                            Level.AddWall(shader, blockW, blockH, blockD, camera, -1, i, objects, false, voidTextureDiffusePath, voidTextureSpecularPath);
+                        }
+                        if (!addedWall && j == width - 1)
+                        {
+                            Level.AddWall(shader, blockW, blockH, blockD, camera, width, i, objects, false, voidTextureDiffusePath, voidTextureSpecularPath);
                         }
 
                         // add doors
@@ -85,43 +103,26 @@ namespace zpg
                         }
                     }
                 }
-
-                // This part serves to protect player leaving the map.
-                // Generate cube walls around the whole map.
-                // Use different texture (e.g. stars in the space) to indicate end of map.
-                string voidTexturePath = "./Textures/void.png";
-                // for X and Z axis, in both generate two wall - on one and the other side = only difference is in the Z/X coordinate
-                for (int x = 0; x < width; x++)
-                {
-                    Cube wall = new Cube(shader, blockW, blockH, blockD, camera, voidTexturePath);
-                    wall.Transform.Position = new OpenTK.Mathematics.Vector3(x * blockW, blockH / 2, -1 * blockD);
-                    wall.UpdateCollisionCube();
-
-                    objects.Add(wall);
-
-                    Cube wall2 = new Cube(shader, blockW, blockH, blockD, camera, voidTexturePath);
-                    wall2.Transform.Position = new OpenTK.Mathematics.Vector3(x * blockW, blockH / 2, depth * blockD);
-                    wall2.UpdateCollisionCube();
-
-                    objects.Add(wall2);
-                }
-                for (int z = 0; z < depth; z++)
-                {
-                    Cube wall = new Cube(shader, blockW, blockH, blockD, camera, voidTexturePath);
-                    wall.Transform.Position = new OpenTK.Mathematics.Vector3(-1 * blockW, blockH / 2, z * blockD);
-                    wall.UpdateCollisionCube();
-
-                    objects.Add(wall);
-
-                    Cube wall2 = new Cube(shader, blockW, blockH, blockD, camera, voidTexturePath);
-                    wall2.Transform.Position = new OpenTK.Mathematics.Vector3(width * blockW, blockH / 2, z * blockD);
-                    wall2.UpdateCollisionCube();
-
-                    objects.Add(wall2);
-                }
             }
 
             return (camPos, objects);
+        }
+
+        /// <summary>
+        /// Add one wall of dimensions w/h/d onto position x,z (y = 1/2 h) into list.
+        /// Can use non-default textures.
+        /// </summary>
+        private static void AddWall(Shader shader, float w, float h, float d, Camera camera, float x, float z, List<RenderObject> list, bool useDefaultTextures = true, string diffuseMap = "", string specularMap = "")
+        {
+            Cube wall;
+            if (useDefaultTextures)
+                wall = new Cube(shader, w, h, d, camera);
+            else
+                wall = new Cube(shader, w, h, d, camera, diffuseMap, specularMap);
+            wall.Transform.Position = new OpenTK.Mathematics.Vector3(x * w, h / 2, z * d);
+            wall.UpdateCollisionCube();
+
+            list.Add(wall);
         }
     }
 }
