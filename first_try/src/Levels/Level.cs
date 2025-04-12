@@ -36,6 +36,7 @@ namespace zpg
                 }
 
                 // for each line
+                // Parallel.For(0, (int)depth, (i, s) =>
                 for (int i = 0; i < depth; i++)
                 {
                     line = sr.ReadLine();
@@ -56,6 +57,11 @@ namespace zpg
                         {
                             Level.AddWall(shader, blockW, blockH, blockD, camera, j, i, objects);
                             addedWall = true;
+                        }
+                        else
+                        {
+                            Level.AddFloor(shader, blockW, 0.01f, blockD, camera, j, 0, i, objects);
+                            Level.AddFloor(shader, blockW, 0.01f, blockD, camera, j, blockH, i, objects);
                         }
                         // add end-of-map walls to the edge of map
                         if (!addedWall && i == 0)
@@ -102,7 +108,7 @@ namespace zpg
                             camPos.Z = i * blockD;
                         }
                     }
-                }
+                }//);
             }
 
             return (camPos, objects);
@@ -123,6 +129,24 @@ namespace zpg
             wall.UpdateCollisionCube();
 
             list.Add(wall);
+        }
+        /// <summary>
+        /// Add one floor of dimensions w/h/d onto position x,z (y = - 1/2 h) into list.
+        /// Can use non-default textures.
+        /// </summary>
+        private static void AddFloor(Shader shader, float w, float h, float d, Camera camera, float x, float y, float z, List<RenderObject> list, bool useDefaultTextures = true, string diffuseMap = "", string specularMap = "")
+        {
+            Cube floor;
+            if (useDefaultTextures)
+                floor = new Cube(shader, w, h, d, camera);
+            else
+                floor = new Cube(shader, w, h, d, camera, diffuseMap, specularMap);
+            floor.Transform.Position = new OpenTK.Mathematics.Vector3(x * w, -h / 2 + y, z * d);
+
+            floor.UpdateCollisionCube();
+
+            // Console.WriteLine(floor.CollisionCube);
+            list.Add(floor);
         }
     }
 }

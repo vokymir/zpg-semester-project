@@ -24,19 +24,29 @@ namespace zpg
         public Matrix4 ViewMatrix => Matrix4.LookAt(this.Transform.Position, Transform.Position + Front, Up);
         public Matrix4 ProjectionMatrix { get; private set; }
 
+        private static float playerHeight = 1.8f;
+        private static float eyesHeight = 1.7f;
+        private bool gravity = false;
+
         public CollisionCube CollisionCube { get; private set; } = new CollisionCube()
         {
             Center = new Vector3(0, 0, 0),
             Xover2 = 0.5f,
-            Yover2 = 2.0f,
+            Yover2 = playerHeight / 2, // center of collisionbox in the center of player
             Zover2 = 0.5f
         };
 
         public Camera(float aspectRatio)
         {
             // make collision cube move with camera automagically
-            Transform.PropertyChanged += (s, e) => CollisionCube.Center = Transform.Position;
+            Transform.PropertyChanged += (s, e) =>
+            {
+                Vector3 newCenter = Transform.Position;
+                newCenter.Y -= eyesHeight - playerHeight / 2; // eyes at 1.7m, center of player box at 1.8m / 2 = 0.9m => 1.7 - 0.9 = 0.8m
+                CollisionCube.Center = newCenter;
+            };
             Resize(aspectRatio);
+            Transform.Position += new Vector3(0.0f, 0.3f, 0.0f);
         }
 
         public void Resize(float aspectRatio) => this.ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver2, aspectRatio, 0.1f, 100.0f);
@@ -70,27 +80,37 @@ namespace zpg
 
         /// <summary>
         /// Move accordingly with what was on the keyboard. Take delta time into consideration.
+        /// Should be upgraded, so it doesn't check all objects, but only the near one.
         /// </summary>
         public void ProcessKeyboard(KeyboardState input, float dT, List<RenderObject> objects)
         {
-            Vector3 direction = Vector3.Zero;
+            Vector3 horizontalDirection = Vector3.Zero;
+            Vector3 verticalDirection = Vector3.Zero;
 
-            if (input.IsKeyDown(Keys.W)) direction += Front;
-            if (input.IsKeyDown(Keys.S)) direction -= Front;
-            if (input.IsKeyDown(Keys.A)) direction -= Vector3.Cross(Front, Up).Normalized();
-            if (input.IsKeyDown(Keys.D)) direction += Vector3.Cross(Front, Up).Normalized();
+            if (input.IsKeyDown(Keys.W)) horizontalDirection += Front;
+            if (input.IsKeyDown(Keys.S)) horizontalDirection -= Front;
+            if (input.IsKeyDown(Keys.A)) horizontalDirection -= Vector3.Cross(Front, Up).Normalized();
+            if (input.IsKeyDown(Keys.D)) horizontalDirection += Vector3.Cross(Front, Up).Normalized();
 
             // avoid flying
-            direction.Y = 0;
+            horizontalDirection.Y = 0;
 
-            // guard
-            if (direction.LengthSquared <= 0)
-            {
-                return;
-            }
+            // allow jumping
+            if (input.IsKeyDown(Keys.Space)) { verticalDirection += Vector3.UnitY; gravity = true; }
 
-            // what move would the player like to make - try it
-            var move = direction.Normalized() * speed * dT;
+            // gravity
+            // if (Transform.Position.Y > eyesHeight)
+            if (gravity)
+                verticalDirection -= Vector3.UnitY / 10;
+
+            var move = Vector3.Zero;
+            if (horizontalDirection.LengthSquared > 0) move += horizontalDirection.Normalized() * speed * dT;
+            if (verticalDirection.LengthSquared > 0) move += verticalDirection.Normalized() * dT;
+
+            // guard MAYBE NOT GOOD, because of continual gravity...
+            if (move.LengthSquared <= 0) return;
+
+            // try move
             Transform.Position += move;
 
             // check for collision with each object
@@ -98,14 +118,16 @@ namespace zpg
             {
                 if (CollisionCube.DoesCollide(o.CollisionCube))
                 {
-                    // if collide, check both horizontal axis for the maximal position that could be done
+                    Console.WriteLine($"--Cam: {CollisionCube}\nObject: {o.CollisionCube}");
+                    // if collide, check both horizontal and vertical axis for the maximal position that could be done
                     // in the direction the player wants to go
                     // assume that there is no collision and then subtract to avoid collisions
-                    float maxXposition = Transform.Position.X;
-                    float maxZposition = Transform.Position.Z;
+                    float maxXposition = CollisionCube.Center.X;
+                    float maxYposition = CollisionCube.Center.Y;
+                    float maxZposition = CollisionCube.Center.Z;
 
-                    // check collision on X axis (forget Z)
-                    Transform.Position += new Vector3(0, 0, -move.Z);
+                    // check collision on X axis (forget Y,Z)
+                    Transform.Position += new Vector3(0, -move.Y, -move.Z);
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
                         if (CollisionCube.Center.X > o.CollisionCube.Center.X)
@@ -114,17 +136,38 @@ namespace zpg
                             maxXposition = o.CollisionCube.Center.X - o.CollisionCube.Xover2 - CollisionCube.Xover2;
                     }
 
-                    // check collision on Z axis (return to original position, then forget X)
-                    Transform.Position += new Vector3(-move.X, 0, move.Z);
+                    // check collision on Y axis (forget X, add Y)
+                    Transform.Position += new Vector3(-move.X, move.Y, 0);
+                    if (CollisionCube.DoesCollide(o.CollisionCube))
+                    {
+                        if (CollisionCube.Center.Y > o.CollisionCube.Center.Y)
+                            maxYposition = o.CollisionCube.Center.Y + o.CollisionCube.Yover2 + CollisionCube.Yover2;
+                        if (CollisionCube.Center.Y <= o.CollisionCube.Center.Y)
+                            maxYposition = o.CollisionCube.Center.Y - o.CollisionCube.Yover2 - CollisionCube.Yover2;
+                    }
+
+                    // check collision on Z axis (forget Y, add Z)
+                    Transform.Position += new Vector3(0, -move.Y, move.Z);
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
                         if (CollisionCube.Center.Z > o.CollisionCube.Center.Z)
-                            maxZposition = o.CollisionCube.Center.Z + o.CollisionCube.Zover2 + CollisionCube.Zover2;
+                            maxZposition = o.CollisionCube.Center.Z + o.CollisionCube.Zover2 + CollisionCube.Zover2 + 0.05f;
                         if (CollisionCube.Center.Z <= o.CollisionCube.Center.Z)
                             maxZposition = o.CollisionCube.Center.Z - o.CollisionCube.Zover2 - CollisionCube.Zover2;
                     }
+                    // revert to no move at all
+                    Transform.Position += new Vector3(0, 0, -move.Z);
 
-                    Transform.Position = new Vector3(maxXposition, Transform.Position.Y, maxZposition);
+                    // calculate the maximum possible move
+                    move = new Vector3(
+                            maxXposition - CollisionCube.Center.X,
+                            maxYposition - CollisionCube.Center.Y,
+                            maxZposition - CollisionCube.Center.Z
+                            );
+
+                    // try the edited move
+                    Transform.Position += move;
+                    Console.WriteLine($"->Cam: {CollisionCube}");
                 }
             }
         }
