@@ -29,12 +29,15 @@ namespace zpg
 
         // jumping section
         private bool gravity = false;
-        private float gravitySpeedMultiplier = 2.0f;
-        // each jump is 1 meter high, and happens over-time, not immediately
+        // how fast fall happens
+        private float gravitySpeedMultiplier = 3.0f;
         private bool jumpInProgress = false;
+        // how high is jump
         private static float jumpHeight = 0.5f;
+        // how high to jump (computed when jump start)
         private float jumpTarget = 0.0f;
-        private float jumpSpeedMultiplier = 2.0f;
+        // how fast jump happens
+        private float jumpSpeedMultiplier = 4.0f;
 
         public CollisionCube CollisionCube { get; private set; } = new CollisionCube()
         {
