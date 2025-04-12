@@ -12,7 +12,7 @@ namespace zpg
         {
             List<RenderObject> objects = new();
             OpenTK.Mathematics.Vector3 camPos = new OpenTK.Mathematics.Vector3();
-            camPos.Y = 1.7f; // hard-coded eye-level
+            camPos.Y = 1.7f; // hard-coded eye-level on the start
 
             string voidTextureDiffusePath = "./Textures/void.png";
             string voidTextureSpecularPath = "./Textures/void_specular.png";
@@ -61,7 +61,7 @@ namespace zpg
                         else
                         {
                             Level.AddFloor(shader, blockW, 0.01f, blockD, camera, j, 0, i, objects);
-                            Level.AddFloor(shader, blockW, 0.01f, blockD, camera, j, blockH, i, objects);
+                            // Level.AddFloor(shader, blockW, 0.01f, blockD, camera, j, blockH, i, objects);
                         }
                         // add end-of-map walls to the edge of map
                         if (!addedWall && i == 0)
