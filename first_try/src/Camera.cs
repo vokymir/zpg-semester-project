@@ -26,7 +26,15 @@ namespace zpg
 
         private static float playerHeight = 1.8f;
         private static float eyesHeight = 1.7f;
+
+        // jumping section
         private bool gravity = false;
+        private float gravitySpeedMultiplier = 2.0f;
+        // each jump is 1 meter high, and happens over-time, not immediately
+        private bool jumpInProgress = false;
+        private static float jumpHeight = 0.5f;
+        private float jumpTarget = 0.0f;
+        private float jumpSpeedMultiplier = 2.0f;
 
         public CollisionCube CollisionCube { get; private set; } = new CollisionCube()
         {
@@ -95,20 +103,30 @@ namespace zpg
             // avoid flying
             horizontalDirection.Y = 0;
 
-            // gravity
-            if (gravity)
-                verticalDirection -= new Vector3(0.0f, 0.1f, 0.0f);
-
             // allow jumping
             if (!gravity && input.IsKeyDown(Keys.Space))
             {
-                verticalDirection += new Vector3(0.0f, 10.5f, 0.0f);
-                gravity = true;
+                jumpInProgress = true;
+                jumpTarget = jumpHeight + Transform.Position.Y;
             }
+
+            if (jumpInProgress)
+            {
+                if (Transform.Position.Y >= jumpTarget)
+                {
+                    jumpInProgress = false;
+                    gravity = true;
+                }
+                verticalDirection += new Vector3(0.0f, 1.0f * jumpSpeedMultiplier, 0.0f);
+            }
+
+            // gravity
+            if (gravity && !jumpInProgress)
+                verticalDirection -= new Vector3(0.0f, 1.0f * gravitySpeedMultiplier, 0.0f);
 
             var move = Vector3.Zero;
             if (horizontalDirection.LengthSquared > 0) move += horizontalDirection.Normalized() * speed * dT;
-            if (verticalDirection.LengthSquared > 0) move += verticalDirection * dT * 100;
+            if (verticalDirection.LengthSquared > 0) move += verticalDirection * dT;
 
             // guard MAYBE NOT GOOD, because of continual gravity...
             if (move.LengthSquared <= 0) return;
@@ -121,7 +139,11 @@ namespace zpg
             {
                 if (CollisionCube.DoesCollide(o.CollisionCube))
                 {
-                    Console.WriteLine($"--Cam: {CollisionCube}\nObject: {o.CollisionCube}");
+                    jumpInProgress = false;
+                    gravity = true;
+
+                    // Console.WriteLine($"--Cam: {CollisionCube}\nObject: {o.CollisionCube}");
+
                     // if collide, check both horizontal and vertical axis for the maximal position that could be done
                     // in the direction the player wants to go
                     // assume that there is no collision and then subtract to avoid collisions
