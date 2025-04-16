@@ -12,7 +12,7 @@ namespace zpg
         /// It has default textures, if you don't provide any.
         /// </summary>
         public Cube(Shader shader, float width, float height, float depth, Camera camera, string diffuseMap = "./Textures/container2.png", string specularMap = "./Textures/container2_specular.png")
-            : this(shader, width, height, depth, Math.Max(width, Math.Max(height, depth)) / 2, camera, diffuseMap, specularMap)
+            : this(shader, width, height, depth, Cube.MaxDimensionOver2(width, height, depth), camera, diffuseMap, specularMap)
         // The maxing is for searching the max length of all sides - useful for normalizing the cube into [-1,-1,-1:1,1,1] space.
         { }
 
@@ -22,21 +22,22 @@ namespace zpg
         private Cube(Shader shader, float width, float height, float depth, float maxDimOver2, Camera camera, string diffuseMap, string specularMap)
             : base(shader, camera, GenerateVertices(width, height, depth, maxDimOver2), GenerateIndices(), diffuseMap, specularMap)
         {
-            // set the scale so it fits the dimensions given by user - these are easily changable elsewhere.
-            Transform.Scale = new Vector3(maxDimOver2 / 2);
+            Transform.Scale = Cube.DefaultScale(maxDimOver2);
             CollisionCube.Xover2 = width * 0.5f * Transform.Scale.X;
             CollisionCube.Yover2 = height * 0.5f * Transform.Scale.Y;
             CollisionCube.Zover2 = depth * 0.5f * Transform.Scale.Z;
             CollisionCube.Center = Transform.Position;
         }
 
-        public void UpdateCollisionCube()
-        {
-            CollisionCube.Center = Transform.Position;
-        }
+        public static float MaxDimensionOver2(float x, float y, float z) => Math.Max(x, Math.Max(y, z)) / 2;
+        // set the scale so it fits the dimensions given by user - these are easily changable elsewhere.
+        public static Vector3 DefaultScale(float maxDimOver2) => new Vector3(maxDimOver2 / 2);
+
+        public void UpdateCollisionCube() => CollisionCube.Center = Transform.Position;
+
 
         // this could be loaded from file, but I started with this - maybe in the other assignment part I will implement model loading...
-        private static float[] GenerateVertices(float width, float height, float depth, float maxDimOver2)
+        public static float[] GenerateVertices(float width, float height, float depth, float maxDimOver2)
         {
             float hx = width / maxDimOver2;
             float hy = height / maxDimOver2;
@@ -84,7 +85,7 @@ namespace zpg
             };
         }
 
-        private static uint[] GenerateIndices()
+        public static uint[] GenerateIndices()
         {
             return new uint[]
             {
