@@ -22,7 +22,6 @@ namespace zpg
 
         public CollisionCube CollisionCube { get; private set; } = new();
 
-
         public RenderObject(Shader shader, Camera camera, float[] vertices, uint[] indices, string diffuseMap, string specularMap)
         {
             Shader = shader;

@@ -58,8 +58,8 @@ namespace zpg
         private void LoadObjectsFromStrings(string[] lines)
         {
             // for each char
-            // Parallel.For(0, lines.Length, (i, state) =>
-            for (int i = 0; i < lines.Length; i++)
+            Parallel.For(0, lines.Length, (i, state) =>
+            // for (int i = 0; i < lines.Length; i++)
             {
                 string line = lines[i];
                 for (int j = 0; j < line.Length; j++)
@@ -129,8 +129,7 @@ namespace zpg
                         CameraStartPosition = new OpenTK.Mathematics.Vector3(j * BlockX, 1.7f, i * BlockZ);
                     }
                 }
-            }//);
-
+            });
         }
 
 
