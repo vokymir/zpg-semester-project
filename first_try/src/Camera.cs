@@ -93,7 +93,7 @@ namespace zpg
         /// Move accordingly with what was on the keyboard. Take delta time into consideration.
         /// Should be upgraded, so it doesn't check all objects, but only the near one.
         /// </summary>
-        public void ProcessKeyboard(KeyboardState input, float dT, List<RenderObject> objects)
+        public void ProcessKeyboard(KeyboardState input, float dT, IEnumerable<RenderObject> objects)
         {
             Vector3 horizontalDirection = Vector3.Zero;
             Vector3 verticalDirection = Vector3.Zero;

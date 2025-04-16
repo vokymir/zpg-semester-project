@@ -11,13 +11,15 @@ namespace zpg
         // main camera
         private Camera _camera = new(1.0f);
         // all objects in the scene
-        private List<RenderObject> _objects = new();
+        private IEnumerable<RenderObject> _objects = new List<RenderObject>();
         // lights
         private DirectionalLight _dirLight = new();
         private SpotLight _spotLight = new();
         private List<PointLight> _pointLights = new();
         // stored level path for future use
         private string _levelPath;
+        // stored level for future reference
+        private Level? _level;
         // timer and fps for calculating fps
         private System.Timers.Timer _timer = new System.Timers.Timer(1000);
         private int _fps;
@@ -70,7 +72,6 @@ namespace zpg
         protected override void OnLoad()
         {
             _camera = new Camera(Size.X / (float)Size.Y);
-            _camera.Transform.Position = new OpenTK.Mathematics.Vector3(0, 1.7f, 0);
 
             CursorState = CursorState.Grabbed;
 
@@ -189,7 +190,9 @@ namespace zpg
         {
             try
             {
-                (_camera.Transform.Position, _objects) = Level.LoadFile(_levelPath, shader, _camera);
+                _level = Level.LoadFile(_levelPath, shader, _camera);
+                _camera.Transform.Position = _level.CameraStartPosition;
+                _objects = _level.LevelObjects;
             }
             catch
             {
