@@ -112,53 +112,45 @@ namespace zpg
                     AddWall(x, y, z);
                     addedWall = true;
                 }
-                else
+                // add end-of-map walls to the edge of map
+                if (!addedWall)
+                {
+                    if (z == 0) AddWall(x, y, -1, true);
+                    if (z == MapZ - 1) AddWall(x, y, MapZ, true);
+                    if (x == 0) AddWall(-1, y, z, true);
+                    if (x == MapX - 1) AddWall(MapX, y, z, true);
+                }
+
+                // only floor
+                if (ch == '-') AddFloor(x, y, z);
+
+                // only ceiling
+                if (ch == '+') AddFloor(x, y, z);
+
+                // floor and ceiling
+                if (ch == '=')
                 {
                     AddFloor(x, y, z);
                     AddFloor(x, y + 1, z);
                 }
-                // add end-of-map walls to the edge of map
-                if (!addedWall && z == 0)
-                {
-                    AddWall(x, y, -1, true);
-                }
-                if (!addedWall && z == MapZ - 1)
-                {
-                    AddWall(x, y, MapZ, true);
-                }
-                if (!addedWall && x == 0)
-                {
-                    AddWall(-1, y, z, true);
-                }
-                if (!addedWall && x == MapX - 1)
-                {
-                    AddWall(MapX, y, z, true);
-                }
 
                 // add doors
-                if ('A' <= ch && ch <= 'G')
-                {
-                }
+                if ('A' <= ch && ch <= 'G') { }
 
                 // add lights
-                if (ch == '*' || ch == '^' || ch == '!')
-                {
-                }
+                if (ch == '*' || ch == '^' || ch == '!') { }
 
                 // add solid objects
-                if ('H' <= ch && ch <= 'N')
-                {
-                }
+                if ('H' <= ch && ch <= 'N') { }
 
                 // add collectables
-                if ('T' <= ch && ch <= 'Z')
-                {
-                }
+                if ('T' <= ch && ch <= 'Z') { }
 
                 // add camera position
                 if (ch == '@')
                 {
                     CameraStartPosition = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY + 1.7f, z * BlockZ);
+                    AddFloor(x, y, z);
                 }
             }
         }
