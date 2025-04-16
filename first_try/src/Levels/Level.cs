@@ -1,13 +1,11 @@
-using System.Collections.Concurrent;
 
 namespace zpg
 {
     class Level
     {
         public OpenTK.Mathematics.Vector3 CameraStartPosition { get; set; } = OpenTK.Mathematics.Vector3.Zero;
-        public IEnumerable<RenderObject> LevelObjects { get; set; } = new List<RenderObject>();
-        // would be used when loading in parallel
-        private ConcurrentBag<RenderObject>? ParallelLoadLevelObjects;
+        public ICollection<RenderObject> LevelObjects { get; set; } = new List<RenderObject>();
+
         public string FilePath { get; init; } = string.Empty;
         public Shader Shader { get; init; }
         public Camera Camera { get; init; }
@@ -39,46 +37,42 @@ namespace zpg
         /// Returns Level instance with position for camera and IEnumerable of objects to render in the scene.
         /// Throws exceptions if file invalid, assumes file exists.
         /// </summary>
-        public static Level LoadFile(string path, Shader shader, Camera camera)
+        public void LoadFile()
         {
-            // create new level WITH the concurentBag
-            Level level = new(path, shader, camera) { ParallelLoadLevelObjects = new ConcurrentBag<RenderObject>() };
+            string[] lines = LoadMapFile();
 
-            string[] lines = level.LoadMapFile();
-
-            level.LoadObjectsFromStrings(lines);
-
-            // copy the objects from parallel structure and get rid of the parallel structure
-            level.LevelObjects = level.ParallelLoadLevelObjects!.ToList();
-            level.ParallelLoadLevelObjects = null;
-
-            return level;
+            LoadObjectsFromStrings(lines);
         }
 
         private string[] LoadMapFile()
         {
             string[] lines;
-            int width;
-            int depth;
+            int width = 0;
+            int height = 1;
+            int depth = 0;
 
             using (StreamReader sr = new StreamReader(FilePath))
             {
                 string? line = sr.ReadLine();
 
                 // load width and depth of map
-                string[] wh = line is not null ? line.Split("x") : ["0", "0"];
-                int.TryParse(wh[0], out width);
-                int.TryParse(wh[1], out depth);
+                string[] xzy = line is not null ? line.Split("x") : ["0", "0", "0"];
+                int.TryParse(xzy[0], out width);
+                int.TryParse(xzy[1], out depth);
+                if (xzy.Length > 2)
+                    int.TryParse(xzy[2], out height);
 
                 if (width < 1 || depth < 1)
                 {
-                    throw new ApplicationException($"Invalid map dimensions while trying to load {FilePath}");
+                    throw new ApplicationException($"Invalid 2D map dimensions while trying to load {FilePath}");
                 }
 
-                lines = new string[(int)depth];
+                int lineNumbers = depth * height;
+
+                lines = new string[lineNumbers];
 
                 // for each line
-                for (int i = 0; i < depth; i++)
+                for (int i = 0; i < lineNumbers; i++)
                 {
                     line = sr.ReadLine();
                     // avoid possible null warning
@@ -87,6 +81,7 @@ namespace zpg
 
                 MapX = width;
                 MapZ = depth;
+                MapY = height;
 
                 return lines;
             }
@@ -95,96 +90,91 @@ namespace zpg
         private void LoadObjectsFromStrings(string[] lines)
         {
             // for each char
-            // Parallel.For(0, lines.Length, (i, state) =>
+            // parallel not feasible, because OpenGL is a state machine
+            // it would be possible, but it's too complicated for what would it add.
             for (int i = 0; i < lines.Length; i++)
             {
                 string line = lines[i];
-                for (int j = 0; j < line.Length; j++)
-                {
-                    char ch = line[j];
-                    bool addedWall = false;
-
-                    // add all walls
-                    if ('o' <= ch && ch <= 'z')
-                    {
-                        // Level.AddWall(Shader, BlockX, BlockY, BlockZ, Camera, j, i, LevelObjects);
-                        AddWall(j, 0, i);
-                        addedWall = true;
-                    }
-                    else
-                    {
-                        // Level.AddFloor(Shader, BlockX, 0.01f, BlockZ, Camera, j, 0, i, LevelObjects);
-                        AddFloor(j, 0, i);
-                        // Level.AddFloor(Shader, BlockX, 0.01f, BlockZ, Camera, j, BlockY, i, LevelObjects);
-                        AddFloor(j, 1, i);
-                    }
-                    // add end-of-map walls to the edge of map
-                    if (!addedWall && i == 0)
-                    {
-                        // Level.AddWall(Shader, BlockX, BlockY, BlockZ, Camera, j, -1, LevelObjects, false, VoidTextureDiffusePath, VoidTextureSpecularPath);
-                        AddWall(j, 0, -1, true);
-                    }
-                    if (!addedWall && i == MapZ - 1)
-                    {
-                        // Level.AddWall(Shader, BlockX, BlockY, BlockZ, Camera, j, MapZ, LevelObjects, false, VoidTextureDiffusePath, VoidTextureSpecularPath);
-                        AddWall(j, 0, MapZ, true);
-                    }
-                    if (!addedWall && j == 0)
-                    {
-                        // Level.AddWall(Shader, BlockX, BlockY, BlockZ, Camera, -1, i, LevelObjects, false, VoidTextureDiffusePath, VoidTextureSpecularPath);
-                        AddWall(-1, 0, i, true);
-                    }
-                    if (!addedWall && j == MapX - 1)
-                    {
-                        // Level.AddWall(Shader, BlockX, BlockY, BlockZ, Camera, MapX, i, LevelObjects, false, VoidTextureDiffusePath, VoidTextureSpecularPath);
-                        AddWall(MapX, 0, i, true);
-                    }
-
-                    // add doors
-                    if ('A' <= ch && ch <= 'G')
-                    {
-                    }
-
-                    // add lights
-                    if (ch == '*' || ch == '^' || ch == '!')
-                    {
-                    }
-
-                    // add solid objects
-                    if ('H' <= ch && ch <= 'N')
-                    {
-                    }
-
-                    // add collectables
-                    if ('T' <= ch && ch <= 'Z')
-                    {
-                    }
-
-                    // add camera position
-                    if (ch == '@')
-                    {
-                        CameraStartPosition = new OpenTK.Mathematics.Vector3(j * BlockX, 1.7f, i * BlockZ);
-                    }
-                }
-            }//);
+                ProcessLine(i / MapZ, i % MapZ, line);
+            }
         }
 
+        private void ProcessLine(int y, int z, string line)
+        {
+            for (int x = 0; x < line.Length; x++)
+            {
+                char ch = line[x];
+                bool addedWall = false;
 
+                // add all walls
+                if ('o' <= ch && ch <= 'z')
+                {
+                    AddWall(x, y, z);
+                    addedWall = true;
+                }
+                else
+                {
+                    AddFloor(x, y, z);
+                    AddFloor(x, y + 1, z);
+                }
+                // add end-of-map walls to the edge of map
+                if (!addedWall && z == 0)
+                {
+                    AddWall(x, y, -1, true);
+                }
+                if (!addedWall && z == MapZ - 1)
+                {
+                    AddWall(x, y, MapZ, true);
+                }
+                if (!addedWall && x == 0)
+                {
+                    AddWall(-1, y, z, true);
+                }
+                if (!addedWall && x == MapX - 1)
+                {
+                    AddWall(MapX, y, z, true);
+                }
+
+                // add doors
+                if ('A' <= ch && ch <= 'G')
+                {
+                }
+
+                // add lights
+                if (ch == '*' || ch == '^' || ch == '!')
+                {
+                }
+
+                // add solid objects
+                if ('H' <= ch && ch <= 'N')
+                {
+                }
+
+                // add collectables
+                if ('T' <= ch && ch <= 'Z')
+                {
+                }
+
+                // add camera position
+                if (ch == '@')
+                {
+                    CameraStartPosition = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY + 1.7f, z * BlockZ);
+                }
+            }
+        }
 
         /// <summary>
         /// Add one wall of dimensions w/h/d onto position x,z (y = 1/2 h) into list.
-        /// Can use non-default textures.
         /// </summary>
-        // private static void AddWall(Shader shader, float w, float h, float d, Camera camera, float x, float z, IEnumerable<RenderObject> objects, bool useDefaultTextures = true, string diffuseMap = "", string specularMap = "")
         private void AddWall(int x, int y, int z, bool isVoid = false)
         {
             Cube wall = new Cube(Shader, BlockX, BlockY, BlockZ, Camera, isVoid ? VoidTextureDiffusePath : WallTextureDiffusePath, isVoid ? VoidTextureSpecularPath : WallTextureSpecularPath);
-            wall.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, BlockY / 2, z * BlockZ);
+            wall.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, BlockY / 2 + y * BlockY, z * BlockZ);
             wall.UpdateCollisionCube();
 
-            // ensure this exists in the LoadLevel method, before this is called
-            ParallelLoadLevelObjects!.Add(wall);
+            LevelObjects.Add(wall);
         }
+
         /// <summary>
         /// Add one floor of dimensions w/h/d onto position x,z (y = - 1/2 h) into list.
         /// Can use non-default textures.
@@ -197,7 +187,7 @@ namespace zpg
             floor.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, -floorY / 2 + y * BlockY, z * BlockZ);
             floor.UpdateCollisionCube();
 
-            ParallelLoadLevelObjects!.Add(floor);
+            LevelObjects.Add(floor);
         }
     }
 }

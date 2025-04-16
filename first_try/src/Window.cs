@@ -190,7 +190,9 @@ namespace zpg
         {
             try
             {
-                _level = Level.LoadFile(_levelPath, shader, _camera);
+                _level = new Level(path, shader, _camera);
+                _level.LoadFile();
+
                 _camera.Transform.Position = _level.CameraStartPosition;
                 _objects = _level.LevelObjects;
             }
