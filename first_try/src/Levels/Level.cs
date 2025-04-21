@@ -149,7 +149,7 @@ namespace zpg
                 // add camera position
                 if (ch == '@')
                 {
-                    CameraStartPosition = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY + 1.7f, z * BlockZ);
+                    CameraStartPosition = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY + Camera.eyesHeight + 0.4f, z * BlockZ);
                     AddFloor(x, y, z);
                 }
             }

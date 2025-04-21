@@ -25,15 +25,16 @@ namespace zpg
         public Matrix4 ProjectionMatrix { get; private set; }
 
         private static float playerHeight = 1.8f;
-        private static float eyesHeight = 1.7f;
+        public static float eyesHeight = 1.7f;
 
         // jumping section
-        private bool gravity = false;
+        // on which object is player standing?
+        private RenderObject? standingOnObject = null;
         // how fast fall happens
         private float gravitySpeedMultiplier = 3.0f;
         private bool jumpInProgress = false;
         // how high is jump
-        private static float jumpHeight = 0.5f;
+        private static float jumpHeight = 1.5f;
         // how high to jump (computed when jump start)
         private float jumpTarget = 0.0f;
         // how fast jump happens
@@ -57,7 +58,8 @@ namespace zpg
                 CollisionCube.Center = newCenter;
             };
             Resize(aspectRatio);
-            Transform.Position += new Vector3(0.0f, 0.3f, 0.0f);
+            // why was this here?
+            // Transform.Position += new Vector3(0.0f, 0.3f, 0.0f);
         }
 
         public void Resize(float aspectRatio) => this.ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver2, aspectRatio, 0.1f, 100.0f);
@@ -107,9 +109,10 @@ namespace zpg
             horizontalDirection.Y = 0;
 
             // allow jumping
-            if (!gravity && input.IsKeyDown(Keys.Space))
+            if (!jumpInProgress && standingOnObject != null && input.IsKeyDown(Keys.Space))// && standingOnObject != null && CollisionCube.Distance(standingOnObject.CollisionCube) < 0.1f)
             {
                 jumpInProgress = true;
+                standingOnObject = null;
                 jumpTarget = jumpHeight + Transform.Position.Y;
             }
 
@@ -118,24 +121,30 @@ namespace zpg
                 if (Transform.Position.Y >= jumpTarget)
                 {
                     jumpInProgress = false;
-                    gravity = true;
                 }
-                verticalDirection += new Vector3(0.0f, 1.0f * jumpSpeedMultiplier, 0.0f);
+                else
+                {
+                    verticalDirection += new Vector3(0.0f, 1.0f * jumpSpeedMultiplier, 0.0f);
+                }
             }
-
-            // gravity
-            if (gravity && !jumpInProgress)
-                verticalDirection -= new Vector3(0.0f, 1.0f * gravitySpeedMultiplier, 0.0f);
 
             var move = Vector3.Zero;
             if (horizontalDirection.LengthSquared > 0) move += horizontalDirection.Normalized() * speed * dT;
-            if (verticalDirection.LengthSquared > 0) move += verticalDirection * dT;
-
-            // guard MAYBE NOT GOOD, because of continual gravity...
-            if (move.LengthSquared <= 0) return;
 
             // try move
-            Transform.Position += move;
+            CollisionCube.Center += move;
+
+            // if not standing on object anymore, start falling
+            if (standingOnObject != null && !CollisionCube.IsAbove(standingOnObject.CollisionCube))
+            {
+                standingOnObject = null;
+            }
+
+            // gravity
+            if (standingOnObject == null)
+                verticalDirection -= new Vector3(0.0f, 1.0f * gravitySpeedMultiplier, 0.0f);
+
+            if (verticalDirection.LengthSquared > 0) move += verticalDirection * dT;
 
             // check for collision with each object
             foreach (var o in objects)
@@ -143,9 +152,7 @@ namespace zpg
                 if (CollisionCube.DoesCollide(o.CollisionCube))
                 {
                     jumpInProgress = false;
-                    gravity = true;
-
-                    // Console.WriteLine($"--Cam: {CollisionCube}\nObject: {o.CollisionCube}");
+                    jumpTarget = -1f;
 
                     // if collide, check both horizontal and vertical axis for the maximal position that could be done
                     // in the direction the player wants to go
@@ -155,7 +162,7 @@ namespace zpg
                     float maxZposition = CollisionCube.Center.Z;
 
                     // check collision on X axis (forget Y,Z)
-                    Transform.Position += new Vector3(0, -move.Y, -move.Z);
+                    CollisionCube.Center += new Vector3(0, -move.Y, -move.Z);
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
                         if (CollisionCube.Center.X > o.CollisionCube.Center.X)
@@ -165,22 +172,35 @@ namespace zpg
                     }
 
                     // check collision on Y axis (forget X, add Y)
-                    Transform.Position += new Vector3(-move.X, move.Y, 0);
+                    CollisionCube.Center += new Vector3(-move.X, move.Y, 0);
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
                         // without epsilon, it sometimes allowed to jump through objects
                         float epsilon = 0.03f;
+
                         if (CollisionCube.Center.Y > o.CollisionCube.Center.Y)
                         {
                             maxYposition = o.CollisionCube.Center.Y + o.CollisionCube.Yover2 + CollisionCube.Yover2 + epsilon;
-                            gravity = false;
+                            // if already standing on something, compare the distances
+                            if (standingOnObject != null)
+                            {
+                                if (CollisionCube.Distance(standingOnObject.CollisionCube) > CollisionCube.Distance(o.CollisionCube) &&
+                                        CollisionCube.IsAbove(o.CollisionCube))
+                                    standingOnObject = o;
+                            }
+                            else
+                            {
+                                standingOnObject = o;
+                            }
                         }
                         if (CollisionCube.Center.Y <= o.CollisionCube.Center.Y)
+                        {
                             maxYposition = o.CollisionCube.Center.Y - o.CollisionCube.Yover2 - CollisionCube.Yover2 - epsilon;
+                        }
                     }
 
                     // check collision on Z axis (forget Y, add Z)
-                    Transform.Position += new Vector3(0, -move.Y, move.Z);
+                    CollisionCube.Center += new Vector3(0, -move.Y, move.Z);
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
                         if (CollisionCube.Center.Z > o.CollisionCube.Center.Z)
@@ -189,7 +209,7 @@ namespace zpg
                             maxZposition = o.CollisionCube.Center.Z - o.CollisionCube.Zover2 - CollisionCube.Zover2;
                     }
                     // revert to no move at all
-                    Transform.Position += new Vector3(0, 0, -move.Z);
+                    CollisionCube.Center += new Vector3(0, 0, -move.Z);
 
                     // calculate the maximum possible move
                     move = new Vector3(
@@ -199,10 +219,10 @@ namespace zpg
                             );
 
                     // try the edited move
-                    Transform.Position += move;
-                    Console.WriteLine($"->Cam: {CollisionCube}");
+                    CollisionCube.Center += move;
                 }
             }
+            Transform.Position += move;
         }
 
     }
