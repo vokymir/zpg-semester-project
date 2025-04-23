@@ -5,6 +5,7 @@ namespace zpg
     {
         public OpenTK.Mathematics.Vector3 CameraStartPosition { get; set; } = OpenTK.Mathematics.Vector3.Zero;
         public ICollection<RenderObject> LevelObjects { get; set; } = new List<RenderObject>();
+        public Dictionary<char, TeleportPlatform> Teleports { get; set; } = new();
 
         public string FilePath { get; init; } = string.Empty;
         public Shader Shader { get; init; }
@@ -16,10 +17,13 @@ namespace zpg
         public string WallTextureSpecularPath { get; set; } = "./Textures/container2_specular.png";
         public string FloorTextureDiffusePath { get; set; } = "./Textures/container2.png";
         public string FloorTextureSpecularPath { get; set; } = "./Textures/container2_specular.png";
+        public string TeleportTextureDiffusePath { get; set; } = "./Textures/scaryTeleport.png";
+        public string TeleportTextureSpecularPath { get; set; } = "./Textures/scaryTeleport.png";
 
         public float BlockX { get; set; } = 2.0f;
         public float BlockY { get; set; } = 3.0f;
         public float BlockZ { get; set; } = 2.0f;
+        public float PlatformY { get; set; } = 0.01f;
 
         public int MapX { get; set; }
         public int MapY { get; set; }
@@ -125,7 +129,7 @@ namespace zpg
                 if (ch == '-') AddFloor(x, y, z);
 
                 // only ceiling
-                if (ch == '+') AddFloor(x, y, z);
+                if (ch == '+') AddFloor(x, y + 1, z);
 
                 // floor and ceiling
                 if (ch == '=')
@@ -133,6 +137,8 @@ namespace zpg
                     AddFloor(x, y, z);
                     AddFloor(x, y + 1, z);
                 }
+
+                if (ch >= '0' && ch <= '9') AddTeleport(x, y, z, ch);
 
                 // add doors
                 if ('A' <= ch && ch <= 'G') { }
@@ -174,12 +180,31 @@ namespace zpg
         // private static void AddFloor(Shader shader, float w, float h, float d, Camera camera, float x, float y, float z, IEnumerable<RenderObject> objects, bool useDefaultTextures = true, string diffuseMap = "", string specularMap = "")
         private void AddFloor(int x, int y, int z)
         {
-            float floorY = 0.01f;
-            Cube floor = new Cube(Shader, BlockX, floorY, BlockZ, Camera, FloorTextureDiffusePath, FloorTextureSpecularPath);
-            floor.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, -floorY / 2 + y * BlockY, z * BlockZ);
+            Platform floor = new(Shader, BlockX, PlatformY, BlockZ, Camera, FloorTextureDiffusePath, FloorTextureSpecularPath);
+            floor.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, -PlatformY / 2 + y * BlockY, z * BlockZ);
             floor.UpdateCollisionCube();
 
             LevelObjects.Add(floor);
+        }
+
+        private void AddTeleport(int x, int y, int z, char ch)
+        {
+            TeleportPlatform teleport = new(Shader, BlockX, PlatformY, BlockZ, Camera, TeleportTextureDiffusePath, TeleportTextureSpecularPath);
+            teleport.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, -PlatformY / 2 + y * BlockY, z * BlockZ);
+            teleport.UpdateCollisionCube();
+
+            LevelObjects.Add(teleport);
+
+            TeleportPlatform? otherTeleport = Teleports.GetValueOrDefault(ch);
+            if (otherTeleport != null)
+            {
+                otherTeleport.LinkedTeleportPlatform = teleport;
+                teleport.LinkedTeleportPlatform = otherTeleport;
+            }
+            else
+            {
+                Teleports.Add(ch, teleport);
+            }
         }
     }
 }

@@ -127,6 +127,18 @@ namespace zpg
             {
                 if (CollisionCube.DoesCollide(o.CollisionCube))
                 {
+                    if (o is TeleportPlatform && ((TeleportPlatform)o).IsActive)
+                    {
+                        float epsilon = 0.3f;
+                        Vector3 position = ((TeleportPlatform)o).LinkedTeleportPlatform!.Transform.Position;
+                        // without epsilon glitch through floor
+                        position.Y += eyesHeight + epsilon;
+                        // wait a bit before activating teleport back
+                        ((TeleportPlatform)o).StartCooldown();
+                        // teleport
+                        Transform.Position = position;
+                        break;
+                    }
 
                     // if collide, check both horizontal and vertical axis for the maximal position that could be done
                     // in the direction the player wants to go
