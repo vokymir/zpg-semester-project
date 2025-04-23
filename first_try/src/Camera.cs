@@ -27,18 +27,10 @@ namespace zpg
         private static float playerHeight = 1.8f;
         public static float eyesHeight = 1.7f;
 
-        // jumping section
         // on which object is player standing?
         private RenderObject? standingOnObject = null;
         // how fast fall happens
         private float gravitySpeedMultiplier = 3.0f;
-        private bool jumpInProgress = false;
-        // how high is jump
-        private static float jumpHeight = 1.5f;
-        // how high to jump (computed when jump start)
-        private float jumpTarget = 0.0f;
-        // how fast jump happens
-        private float jumpSpeedMultiplier = 4.0f;
 
         public CollisionCube CollisionCube { get; private set; } = new CollisionCube()
         {
@@ -58,8 +50,6 @@ namespace zpg
                 CollisionCube.Center = newCenter;
             };
             Resize(aspectRatio);
-            // why was this here?
-            // Transform.Position += new Vector3(0.0f, 0.3f, 0.0f);
         }
 
         public void Resize(float aspectRatio) => this.ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver2, aspectRatio, 0.1f, 100.0f);
@@ -108,26 +98,6 @@ namespace zpg
             // avoid flying
             horizontalDirection.Y = 0;
 
-            // allow jumping
-            if (!jumpInProgress && standingOnObject != null && input.IsKeyDown(Keys.Space))// && standingOnObject != null && CollisionCube.Distance(standingOnObject.CollisionCube) < 0.1f)
-            {
-                jumpInProgress = true;
-                standingOnObject = null;
-                jumpTarget = jumpHeight + Transform.Position.Y;
-            }
-
-            if (jumpInProgress)
-            {
-                if (Transform.Position.Y >= jumpTarget)
-                {
-                    jumpInProgress = false;
-                }
-                else
-                {
-                    verticalDirection += new Vector3(0.0f, 1.0f * jumpSpeedMultiplier, 0.0f);
-                }
-            }
-
             var move = Vector3.Zero;
             if (horizontalDirection.LengthSquared > 0) move += horizontalDirection.Normalized() * speed * dT;
 
@@ -144,15 +114,19 @@ namespace zpg
             if (standingOnObject == null)
                 verticalDirection -= new Vector3(0.0f, 1.0f * gravitySpeedMultiplier, 0.0f);
 
-            if (verticalDirection.LengthSquared > 0) move += verticalDirection * dT;
+            // apply gravity to move
+            if (verticalDirection.LengthSquared > 0)
+            {
+                CollisionCube.Center -= move;
+                move += verticalDirection * dT;
+                CollisionCube.Center += move;
+            }
 
             // check for collision with each object
             foreach (var o in objects)
             {
                 if (CollisionCube.DoesCollide(o.CollisionCube))
                 {
-                    jumpInProgress = false;
-                    jumpTarget = -1f;
 
                     // if collide, check both horizontal and vertical axis for the maximal position that could be done
                     // in the direction the player wants to go
@@ -178,17 +152,17 @@ namespace zpg
                         // without epsilon, it sometimes allowed to jump through objects
                         float epsilon = 0.03f;
 
+                        // player is higher than the object
                         if (CollisionCube.Center.Y > o.CollisionCube.Center.Y)
                         {
                             maxYposition = o.CollisionCube.Center.Y + o.CollisionCube.Yover2 + CollisionCube.Yover2 + epsilon;
                             // if already standing on something, compare the distances
-                            if (standingOnObject != null)
-                            {
-                                if (CollisionCube.Distance(standingOnObject.CollisionCube) > CollisionCube.Distance(o.CollisionCube) &&
-                                        CollisionCube.IsAbove(o.CollisionCube))
-                                    standingOnObject = o;
-                            }
-                            else
+                            if (standingOnObject != null &&
+                                CollisionCube.IsAbove(o.CollisionCube) &&
+                                CollisionCube.Distance(standingOnObject.CollisionCube) > CollisionCube.Distance(o.CollisionCube))
+                                standingOnObject = o;
+                            // else just do it
+                            else if (standingOnObject == null)
                             {
                                 standingOnObject = o;
                             }
