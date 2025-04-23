@@ -31,6 +31,7 @@ namespace zpg
         private RenderObject? standingOnObject = null;
         // how fast fall happens
         private float gravitySpeedMultiplier = 3.0f;
+        private Vector3 _positionToTeleport = Vector3.Zero;
 
         public CollisionCube CollisionCube { get; private set; } = new CollisionCube()
         {
@@ -39,6 +40,9 @@ namespace zpg
             Yover2 = playerHeight / 2, // center of collisionbox in the center of player
             Zover2 = 0.5f
         };
+
+        public WhiteScreen? Overlay { get; set; }
+        private int _teleportDuration { get; set; } = 500;
 
         public Camera(float aspectRatio)
         {
@@ -94,6 +98,27 @@ namespace zpg
             if (input.IsKeyDown(Keys.S)) horizontalDirection -= Front;
             if (input.IsKeyDown(Keys.A)) horizontalDirection -= Vector3.Cross(Front, Up).Normalized();
             if (input.IsKeyDown(Keys.D)) horizontalDirection += Vector3.Cross(Front, Up).Normalized();
+            if (input.IsKeyDown(Keys.Q)) Overlay!.Teleporting = true;
+
+            if (Overlay!.Teleporting)
+            {
+                Overlay.Elapsed += (int)(dT * 1000);
+                if (Overlay.Elapsed < Overlay.DurationMs)
+                    Overlay.Alpha = (float)Overlay.Elapsed / Overlay.DurationMs;
+                else
+                {
+                    Transform.Position = _positionToTeleport;
+                    Overlay.Alpha = 2 - (float)Overlay.Elapsed / Overlay.DurationMs;
+                }
+
+                if (Overlay.Elapsed > 2 * Overlay.DurationMs)
+                {
+                    Overlay.Alpha = 0;
+                    Overlay.Teleporting = false;
+                    Overlay.Elapsed = 0;
+                }
+                return;
+            }
 
             // avoid flying
             horizontalDirection.Y = 0;
@@ -134,9 +159,11 @@ namespace zpg
                         // without epsilon glitch through floor
                         position.Y += eyesHeight + epsilon;
                         // wait a bit before activating teleport back
-                        ((TeleportPlatform)o).StartCooldown();
+                        ((TeleportPlatform)o).StartCooldown(_teleportDuration * 4);
                         // teleport
-                        Transform.Position = position;
+                        Overlay.DurationMs = _teleportDuration;
+                        Overlay.Teleporting = true;
+                        _positionToTeleport = position;
                         break;
                     }
 

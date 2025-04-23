@@ -120,7 +120,9 @@ namespace zpg
             }
 
             LoadLevel(_levelPath, shader);
-            _objects = _objects.Append(new WhiteScreen(_camera));
+            var whiteScreen = new WhiteScreen(_camera);
+            _camera.Overlay = whiteScreen;
+            _objects = _objects.Append(whiteScreen);
 
             // don't render non-visible objects (based on triangle normal)
             GL.Enable(EnableCap.CullFace);

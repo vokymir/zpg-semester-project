@@ -4,9 +4,14 @@ using OpenTK.Graphics.OpenGL;
 
 class WhiteScreen : RenderObject
 {
-    public static float Xover2 { get; set; } = 10;
-    public static float Yover2 { get; set; } = 10;
+    public static float Xover2 { get; set; } = 10f;
+    public static float Yover2 { get; set; } = 10f;
     public static float Z { get; set; } = 1f;
+    public float Alpha { get; set; } = 0.0f;
+
+    public bool Teleporting { get; set; } = false;
+    public int Elapsed { get; set; } = 0;
+    public int DurationMs { get; set; } = 1000;
 
     public WhiteScreen(Camera camera) : base(new Shader("./Shaders/fadeToWhite.vert", "./Shaders/fadeToWhite.frag"), camera,
             [
@@ -27,6 +32,9 @@ class WhiteScreen : RenderObject
 
     public override void Render(DirectionalLight dirLight, List<PointLight> pointLights, SpotLight spotlight)
     {
+        if (!Teleporting)
+            return;
+
         Shader.Use();
 
         Shader.SetMatrix4("projection", _camera.ProjectionMatrix);
@@ -35,7 +43,7 @@ class WhiteScreen : RenderObject
         Shader.SetFloat("Yover2", Yover2);
         Shader.SetFloat("Zdist", Z);
 
-        Shader.SetFloat("alpha", 0.5f);
+        Shader.SetFloat("alpha", Alpha);
 
         GL.Enable(EnableCap.Blend);
         GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
