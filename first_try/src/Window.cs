@@ -120,6 +120,7 @@ namespace zpg
             }
 
             LoadLevel(_levelPath, shader);
+            _objects = _objects.Append(new WhiteScreen(_camera));
 
             // don't render non-visible objects (based on triangle normal)
             GL.Enable(EnableCap.CullFace);

@@ -8,9 +8,12 @@ namespace zpg
         public float Xover2 { get; set; }
         public float Yover2 { get; set; }
         public float Zover2 { get; set; }
+        public bool IsActive { get; set; } = true;
 
         public bool DoesCollide(CollisionCube other)
         {
+            if (!IsActive) return false;
+
             bool xOverlap = Math.Abs(Center.X - other.Center.X) < (Xover2 + other.Xover2);
             bool yOverlap = Math.Abs(Center.Y - other.Center.Y) < (Yover2 + other.Yover2);
             bool zOverlap = Math.Abs(Center.Z - other.Center.Z) < (Zover2 + other.Zover2);

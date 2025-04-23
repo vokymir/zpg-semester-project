@@ -8,8 +8,8 @@ namespace zpg
     {
         private float speed = 1.4f;
 
-        private float pitch = 0.0f;
-        private float yaw = -90.0f;
+        public float pitch = 0.0f;
+        public float yaw = -90.0f;
 
         // mouse sensitivity
         private float sensitivity = 0.1f;

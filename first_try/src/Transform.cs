@@ -14,7 +14,7 @@ namespace zpg
         protected Vector3 _position = Vector3.Zero;
         public Vector3 Position { get => _position; set => SetField(ref _position, value); }
         protected Vector3 _rotation = Vector3.Zero;
-        public Vector3 Rotation { get => _rotation; set => SetField(ref _position, value); }
+        public Vector3 Rotation { get => _rotation; set => SetField(ref _rotation, value); }
         protected Vector3 _scale = Vector3.One;
         public Vector3 Scale { get => _scale; set => SetField(ref _scale, value); }
 
