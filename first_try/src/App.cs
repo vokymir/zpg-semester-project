@@ -6,7 +6,7 @@ namespace zpg
         {
             // try loading level from args, or default to predefined
             string levelPath = "./Levels/lvl00.txt";
-            // string levelPath = "./Levels/lvlSimon01.txt.txt";
+            // string levelPath = "./Levels/lvlSimon01.txt.txt"; // this is just too much to handle
             if (args.Length > 0)
             {
                 levelPath = args[0];

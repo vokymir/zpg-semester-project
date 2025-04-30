@@ -6,6 +6,7 @@ namespace zpg
 
     class Camera : Entity
     {
+        // public stats of player
         public static float PlayerSpeed { get; set; } = 1.4f;
         public static float PlayerHeight { get; set; } = 1.8f;
         public static float PlayerEyesHeight { get; set; } = 1.7f;
