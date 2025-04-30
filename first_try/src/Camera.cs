@@ -24,13 +24,13 @@ namespace zpg
         public Matrix4 ViewMatrix => Matrix4.LookAt(this.Transform.Position, Transform.Position + Front, Up);
         public Matrix4 ProjectionMatrix { get; private set; }
 
-        private static float playerHeight = 1.8f;
-        public static float eyesHeight = 1.7f;
+        public static float playerHeight { get; set; } = 1.8f;
+        public static float eyesHeight { get; set; } = 1.7f;
+        public static float playerWeightKg { get; set; } = 80f;
 
         // on which object is player standing?
-        private RenderObject? standingOnObject = null;
-        // how fast fall happens
-        private float gravitySpeedMultiplier = 3.0f;
+        private RenderObject? _standingOnObject = null;
+        private float _gravitySpeed = 9.81f;
         private Vector3 _positionToTeleport = Vector3.Zero;
 
         public CollisionCube CollisionCube { get; private set; } = new CollisionCube()
@@ -102,6 +102,7 @@ namespace zpg
             if (input.IsKeyDown(Keys.E)) Interacting = true;
             else Interacting = false;
 
+            // if teleport is active, don't do anything else
             if (Overlay!.Teleporting)
             {
                 Overlay.Elapsed += (int)(dT * 1000);
@@ -126,6 +127,7 @@ namespace zpg
             // avoid flying
             horizontalDirection.Y = 0;
 
+            // move is the combination of horizontal and vertical direction
             var move = Vector3.Zero;
             if (horizontalDirection.LengthSquared > 0) move += horizontalDirection.Normalized() * speed * dT;
 
@@ -133,20 +135,27 @@ namespace zpg
             CollisionCube.Center += move;
 
             // if not standing on object anymore, start falling
-            if (standingOnObject != null && !CollisionCube.IsAbove(standingOnObject.CollisionCube))
+            if (_standingOnObject is not null && !CollisionCube.IsAbove(_standingOnObject.CollisionCube))
             {
-                standingOnObject = null;
+                _standingOnObject = null;
             }
 
             // gravity
-            if (standingOnObject == null)
-                verticalDirection -= new Vector3(0.0f, 1.0f * gravitySpeedMultiplier, 0.0f);
+            if (_standingOnObject is null)
+            {
+                // distance y(t):
+                // y(t) = 1/2 * g * t^2
+                // [y] = m, [g] = m*s^-2, [t] = s
+                // for more info, see https://en.wikipedia.org/wiki/Free_fall#Uniform_gravitational_field_without_air_resistance
+                float y_t = 0.5f * _gravitySpeed * dT;
+                verticalDirection -= new Vector3(0.0f, y_t, 0.0f);
+            }
 
             // apply gravity to move
             if (verticalDirection.LengthSquared > 0)
             {
                 CollisionCube.Center -= move;
-                move += verticalDirection * dT;
+                move += verticalDirection;
                 CollisionCube.Center += move;
             }
 
@@ -198,14 +207,14 @@ namespace zpg
                         {
                             maxYposition = o.CollisionCube.Center.Y + o.CollisionCube.Yover2 + CollisionCube.Yover2 + epsilon;
                             // if already standing on something, compare the distances
-                            if (standingOnObject != null &&
+                            if (_standingOnObject != null &&
                                 CollisionCube.IsAbove(o.CollisionCube) &&
-                                CollisionCube.Distance(standingOnObject.CollisionCube) > CollisionCube.Distance(o.CollisionCube))
-                                standingOnObject = o;
+                                CollisionCube.Distance(_standingOnObject.CollisionCube) > CollisionCube.Distance(o.CollisionCube))
+                                _standingOnObject = o;
                             // else just do it
-                            else if (standingOnObject == null)
+                            else if (_standingOnObject == null)
                             {
-                                standingOnObject = o;
+                                _standingOnObject = o;
                             }
                         }
                         if (CollisionCube.Center.Y <= o.CollisionCube.Center.Y)
