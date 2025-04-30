@@ -11,14 +11,14 @@ namespace zpg
         public Shader Shader { get; init; }
         public Camera Camera { get; init; }
 
-        public string VoidTextureDiffusePath { get; set; } = "./Textures/void.png";
-        public string VoidTextureSpecularPath { get; set; } = "./Textures/void_specular.png";
-        public string WallTextureDiffusePath { get; set; } = "./Textures/container2.png";
-        public string WallTextureSpecularPath { get; set; } = "./Textures/container2_specular.png";
-        public string FloorTextureDiffusePath { get; set; } = "./Textures/container2.png";
-        public string FloorTextureSpecularPath { get; set; } = "./Textures/container2_specular.png";
-        public string TeleportTextureDiffusePath { get; set; } = "./Textures/scaryTeleport.png";
-        public string TeleportTextureSpecularPath { get; set; } = "./Textures/scaryTeleport.png";
+        public string VoidTextureDiffusePath { get; set; } = "./Textures/Void.png";
+        public string VoidTextureSpecularPath { get; set; } = "./Textures/VoidSpecular.png";
+        public string WallTextureDiffusePath { get; set; } = "./Textures/Wall.png";
+        public string WallTextureSpecularPath { get; set; } = "./Textures/WallSpecular.png";
+        public string FloorTextureDiffusePath { get; set; } = "./Textures/Floor.png";
+        public string FloorTextureSpecularPath { get; set; } = "./Textures/FloorSpecular.png";
+        public string TeleportTextureDiffuseBasePath { get; set; } = "./Textures/Teleports/TeleportChar";
+        public string TeleportTextureSpecularBasePath { get; set; } = "./Textures/Teleports/TeleportChar";
 
         public float BlockX { get; set; } = 2.0f;
         public float BlockY { get; set; } = 3.0f;
@@ -187,7 +187,7 @@ namespace zpg
 
         private void AddTeleport(int x, int y, int z, char ch)
         {
-            TeleportPlatform teleport = new(Shader, BlockX, PlatformY, BlockZ, Camera, TeleportTextureDiffusePath, TeleportTextureSpecularPath);
+            TeleportPlatform teleport = new(Shader, BlockX, PlatformY, BlockZ, Camera, TeleportTextureDiffuseBasePath + ch + ".png", TeleportTextureSpecularBasePath + ch + ".png");
             teleport.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, -PlatformY / 2 + y * BlockY, z * BlockZ);
             teleport.UpdateCollisionCube();
 

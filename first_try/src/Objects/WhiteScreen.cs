@@ -24,7 +24,7 @@ class WhiteScreen : RenderObject
             0,1,2,
             2,3,0
             ],
-            "./Textures/white.png", "./Textures/white.png")
+            "./Textures/White.png", "./Textures/White.png")
     {
         CollisionCube.IsActive = false;
         Transform.Position = new Vector3(-100, -100, -100); // big numbers to avoid being with other objects in grid
