@@ -99,7 +99,11 @@ namespace zpg
             for (int i = 0; i < lines.Length; i++)
             {
                 string line = lines[i];
+                Console.WriteLine($"Processing line: {i + 1}/{lines.Length}");
                 ProcessLine(i / MapZ, i % MapZ, line);
+                Console.Clear();
+                Console.CursorTop = 0;
+                Console.CursorLeft = 0;
             }
         }
 
@@ -108,56 +112,49 @@ namespace zpg
             for (int x = 0; x < line.Length; x++)
             {
                 char ch = line[x];
-                bool addedWall = false;
+                ProcessChar(x, y, z, ch);
+            }
+        }
 
-                // add all walls
-                if ('o' <= ch && ch <= 'z')
-                {
+        private void ProcessChar(int x, int y, int z, char ch)
+        {
+            bool addedWall = false;
+            Console.Write(ch);
+
+            switch (ch)
+            {
+                case >= 'o' and <= 'z': // walls
                     AddWall(x, y, z);
                     addedWall = true;
-                }
-                // add end-of-map walls to the edge of map
-                if (!addedWall)
-                {
-                    if (z == 0) AddWall(x, y, -1, true);
-                    if (z == MapZ - 1) AddWall(x, y, MapZ, true);
-                    if (x == 0) AddWall(-1, y, z, true);
-                    if (x == MapX - 1) AddWall(MapX, y, z, true);
-                }
-
-                // only floor
-                if (ch == '-') AddFloor(x, y, z);
-
-                // only ceiling
-                if (ch == '+') AddFloor(x, y + 1, z);
-
-                // floor and ceiling
-                if (ch == '=')
-                {
+                    break;
+                case '-': // floor
+                    AddFloor(x, y, z);
+                    break;
+                case '+': // ceiling
+                    AddFloor(x, y + 1, z);
+                    break;
+                case '=': // floor and ceiling
                     AddFloor(x, y, z);
                     AddFloor(x, y + 1, z);
-                }
-
-                if (ch >= '0' && ch <= '9') AddTeleport(x, y, z, ch);
-
-                // add doors
-                if ('A' <= ch && ch <= 'G') { }
-
-                // add lights
-                if (ch == '*' || ch == '^' || ch == '!') { }
-
-                // add solid objects
-                if ('H' <= ch && ch <= 'N') { }
-
-                // add collectables
-                if ('T' <= ch && ch <= 'Z') { }
-
-                // add camera position
-                if (ch == '@')
-                {
+                    break;
+                case >= '0' and <= '9': // teleport
+                    AddTeleport(x, y, z, ch);
+                    break;
+                case '@': // player
                     CameraStartPosition = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY + Camera.eyesHeight + 0.4f, z * BlockZ);
                     AddFloor(x, y, z);
-                }
+                    break;
+                default: // ignore
+                    break;
+            }
+
+            // add end-of-map walls to the edge of map
+            if (!addedWall)
+            {
+                if (z == 0) AddWall(x, y, -1, true);
+                if (z == MapZ - 1) AddWall(x, y, MapZ, true);
+                if (x == 0) AddWall(-1, y, z, true);
+                if (x == MapX - 1) AddWall(MapX, y, z, true);
             }
         }
 

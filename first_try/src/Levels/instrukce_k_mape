@@ -1,0 +1,15 @@
+x ... kostka
+- ... podlaha
++ ... strop
+= ... podlaha a strop
+@ ... startovní pozice
+0 - 9 ... teleporty, dohromady deset dvojic
+
+nahoře je napsáno něco jako
+1x2x3
+kde to znamená:
+1 ... šířka mapy (doprava)
+2 ... hloubka (dolů)
+3 ... počet pater
+každý patro je stejně velký, ale můžeš dát šikovně zdi
+a tím ho vlastně zmenšit
