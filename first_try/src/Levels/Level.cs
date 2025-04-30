@@ -1,16 +1,19 @@
-
 namespace zpg
 {
     class Level
     {
         public OpenTK.Mathematics.Vector3 CameraStartPosition { get; set; } = OpenTK.Mathematics.Vector3.Zero;
+        // in init, you can choose if used dumb or grid or whatever implemented interface
         public IObjectsStore LevelObjects { get; set; }
+        // just helping when loading
         public Dictionary<char, TeleportPlatform> Teleports { get; set; } = new();
 
         public string FilePath { get; init; } = string.Empty;
         public Shader Shader { get; init; }
         public Camera Camera { get; init; }
 
+        // The textures are the same for every wall/floor/etc
+        // Except for Teleports, that is why it's called BasePath
         public string VoidTextureDiffusePath { get; set; } = "./Textures/Void.png";
         public string VoidTextureSpecularPath { get; set; } = "./Textures/VoidSpecular.png";
         public string WallTextureDiffusePath { get; set; } = "./Textures/Wall.png";
@@ -20,11 +23,14 @@ namespace zpg
         public string TeleportTextureDiffuseBasePath { get; set; } = "./Textures/Teleports/TeleportChar";
         public string TeleportTextureSpecularBasePath { get; set; } = "./Textures/Teleports/TeleportChar";
 
+        // The dimensions of one block = wall, and how high is the platform
+        // all in meters
         public float BlockX { get; set; } = 2.0f;
         public float BlockY { get; set; } = 3.0f;
         public float BlockZ { get; set; } = 2.0f;
         public float PlatformY { get; set; } = 0.01f;
 
+        // dimensions of the map
         public int MapX { get; set; }
         public int MapY { get; set; }
         public int MapZ { get; set; }
@@ -34,12 +40,12 @@ namespace zpg
             FilePath = path;
             Shader = shader;
             Camera = camera;
+            // choose whichever interface implementation you like
             LevelObjects = new ObjectsStoreGrid(camera);
         }
 
         /// <summary>
-        /// Load map from file, with given shader and camera.
-        /// Returns Level instance with position for camera and IEnumerable of objects to render in the scene.
+        /// Load map from file, fills this level instance.
         /// Throws exceptions if file invalid, assumes file exists.
         /// </summary>
         public void LoadFile()
@@ -49,6 +55,10 @@ namespace zpg
             LoadObjectsFromStrings(lines);
         }
 
+        /// <summary>
+        /// Load the file into memory.
+        /// Throws exception if bad map dimensions.
+        /// </summary>
         private string[] LoadMapFile()
         {
             string[] lines;
@@ -64,16 +74,17 @@ namespace zpg
                 string[] xzy = line is not null ? line.Split("x") : ["0", "0", "0"];
                 int.TryParse(xzy[0], out width);
                 int.TryParse(xzy[1], out depth);
+                // also load height
                 if (xzy.Length > 2)
                     int.TryParse(xzy[2], out height);
 
+                // this is clearly invalid
                 if (width < 1 || depth < 1)
                 {
                     throw new ApplicationException($"Invalid 2D map dimensions while trying to load {FilePath}");
                 }
 
                 int lineNumbers = depth * height;
-
                 lines = new string[lineNumbers];
 
                 // for each line
@@ -92,16 +103,25 @@ namespace zpg
             }
         }
 
+        /// <summary>
+        /// From in-memory-stored file create objects and position them correctly.
+        /// </summary>
         private void LoadObjectsFromStrings(string[] lines)
         {
             // for each char
             // parallel not feasible, because OpenGL is a state machine
-            // it would be possible, but it's too complicated for what would it add.
+            // it would be possible, but it's too complicated for what benefit would it have (at least I think)
+            // even though, for bigger levels it would be neccessary
+            // See this: https://learnopengl.com/Advanced-OpenGL/Instancing
+            // but I hadn't have the time nor will to implement this
             for (int i = 0; i < lines.Length; i++)
             {
                 string line = lines[i];
-                Console.WriteLine($"Processing line: {i + 1}/{lines.Length}");
+
+                Console.WriteLine($"Loading file: {FilePath}\nProcessing line: {i + 1}/{lines.Length}"); // it's usefull when loading bigger file
+
                 ProcessLine(i / MapZ, i % MapZ, line);
+
                 Console.Clear();
                 Console.CursorTop = 0;
                 Console.CursorLeft = 0;
@@ -117,10 +137,14 @@ namespace zpg
             }
         }
 
+        /// <summary>
+        /// Based on char, creates adequate object and positions it in the map.
+        /// When on the edge of map, but no wall, add void-wall.
+        /// </summary>
         private void ProcessChar(int x, int y, int z, char ch)
         {
             bool addedWall = false;
-            Console.Write(ch);
+            Console.Write(ch); // output for when loading
 
             switch (ch)
             {
@@ -145,7 +169,7 @@ namespace zpg
                     CameraStartPosition = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY + Camera.PlayerEyesHeight + 0.4f, z * BlockZ);
                     AddFloor(x, y, z);
                     break;
-                default: // ignore
+                default: // ignore other characters
                     break;
             }
 
@@ -160,7 +184,7 @@ namespace zpg
         }
 
         /// <summary>
-        /// Add one wall of dimensions w/h/d onto position x,z (y = 1/2 h) into list.
+        /// Add one wall of BlockDimensions, position it.
         /// </summary>
         private void AddWall(int x, int y, int z, bool isVoid = false)
         {
@@ -172,10 +196,8 @@ namespace zpg
         }
 
         /// <summary>
-        /// Add one floor of dimensions w/h/d onto position x,z (y = - 1/2 h) into list.
-        /// Can use non-default textures.
+        /// Add one floor on position.
         /// </summary>
-        // private static void AddFloor(Shader shader, float w, float h, float d, Camera camera, float x, float y, float z, IEnumerable<RenderObject> objects, bool useDefaultTextures = true, string diffuseMap = "", string specularMap = "")
         private void AddFloor(int x, int y, int z)
         {
             Platform floor = new(Shader, BlockX, PlatformY, BlockZ, Camera, FloorTextureDiffusePath, FloorTextureSpecularPath);
@@ -185,14 +207,19 @@ namespace zpg
             LevelObjects.Add(floor);
         }
 
+        /// <summary>
+        /// Add Teleport platform, same as floor, but also chooses the right texture and bind teleports.
+        /// </summary>
         private void AddTeleport(int x, int y, int z, char ch)
         {
+            // choose texture based on char
             TeleportPlatform teleport = new(Shader, BlockX, PlatformY, BlockZ, Camera, TeleportTextureDiffuseBasePath + ch + ".png", TeleportTextureSpecularBasePath + ch + ".png");
             teleport.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, -PlatformY / 2 + y * BlockY, z * BlockZ);
             teleport.UpdateCollisionCube();
 
             LevelObjects.Add(teleport);
 
+            // bind teleports
             TeleportPlatform? otherTeleport = Teleports.GetValueOrDefault(ch);
             if (otherTeleport != null)
             {
