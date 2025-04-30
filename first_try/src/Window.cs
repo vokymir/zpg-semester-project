@@ -11,7 +11,7 @@ namespace zpg
         // main camera
         private Camera _camera = new(1.0f);
         // all objects in the scene
-        private IEnumerable<RenderObject> _objects = new List<RenderObject>();
+        private IObjectsStore _objects = new ObjectsStoreDumb();
         // lights
         private DirectionalLight _dirLight = new();
         private SpotLight _spotLight = new();
@@ -122,7 +122,7 @@ namespace zpg
             LoadLevel(_levelPath, shader);
             var whiteScreen = new WhiteScreen(_camera);
             _camera.Overlay = whiteScreen;
-            _objects = _objects.Append(whiteScreen);
+            _objects.Add(whiteScreen);
 
             // don't render non-visible objects (based on triangle normal)
             GL.Enable(EnableCap.CullFace);
@@ -157,7 +157,7 @@ namespace zpg
             _spotLight.Direction = _camera.Front + (0.0f, -MathHelper.DegreesToRadians(2), 0.0f);
 
             // render all objects
-            foreach (var obj in _objects) obj.Render(_dirLight, _pointLights, _spotLight);
+            foreach (var obj in _objects.GetAll()) obj.Render(_dirLight, _pointLights, _spotLight);
             SwapBuffers();
 
             // count the fps
@@ -167,7 +167,7 @@ namespace zpg
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
             var input = KeyboardState;
-            _camera.ProcessKeyboard(input, (float)args.Time, this._objects);
+            _camera.ProcessKeyboard(input, (float)args.Time, this._objects.GetOnlyRelevant());
 
             // close game - CapsLk because of my keyboard mapping sometimes fails
             if (input.IsKeyPressed(Keys.Escape) || input.IsKeyPressed(Keys.CapsLock))
