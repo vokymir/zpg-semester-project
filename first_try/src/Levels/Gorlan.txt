@@ -1,0 +1,20 @@
+43x19x1
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+x      2xxx   x x x          3x           x
+x xxxx x x  x     x xxxxxxxxxxx xxxxxxxxx x
+x xx   x x     xx x x4                  x x
+x x  x x x x x  x x xxxxxxxxxxx xxxxx xxx x
+x xxxxxx x    x x                     x   x
+x        xxx    x xxxxxxx  x xxxxxxxx xx  x
+x xxxxx    x x  x x1    x  x x      x x x x
+x x   xxxx x  x x xxxxx x  x  xxxxx   x  xx
+x x x    x x    x       x  xxxx   xxxxxx  x
+x x xxxx x xxxx   xxxxx x       xxx   xxxxx
+x x   xx x            x x  xxxx x   x1x   x
+x xx  3x x xxxxxxx x xx x       x  xxxxxx x
+x  x xxx x x       x  x xxxxxxx x  x  x   x
+x    x   x xxx  xxxxx x       x x  xx   x x
+xxx  xxx xxxxxxxx xxx xxxxxxx xxx xxx xxx x
+x x   x     xx             xx   x x   xx2 x
+x   x    x     x  x  @ x x    x     x     x
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
