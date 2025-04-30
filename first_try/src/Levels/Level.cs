@@ -4,7 +4,7 @@ namespace zpg
     class Level
     {
         public OpenTK.Mathematics.Vector3 CameraStartPosition { get; set; } = OpenTK.Mathematics.Vector3.Zero;
-        public IObjectsStore LevelObjects { get; set; } = new ObjectsStoreDumb();
+        public IObjectsStore LevelObjects { get; set; }
         public Dictionary<char, TeleportPlatform> Teleports { get; set; } = new();
 
         public string FilePath { get; init; } = string.Empty;
@@ -34,6 +34,7 @@ namespace zpg
             FilePath = path;
             Shader = shader;
             Camera = camera;
+            LevelObjects = new ObjectsStoreGrid(camera);
         }
 
         /// <summary>
