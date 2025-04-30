@@ -28,7 +28,7 @@ class WhiteScreen : RenderObject
     {
         CollisionCube.IsActive = false;
         Transform.Position = new Vector3(-100, -100, -100); // big numbers to avoid being with other objects in grid
-        Transform.Scale = new Vector3(Xover2, Yover2, 1);
+        Transform.Scale = new Vector3(Xover2, Yover2, 1); // stretch the whole screen
     }
 
     public override void Render(DirectionalLight dirLight, List<PointLight> pointLights, SpotLight spotlight)

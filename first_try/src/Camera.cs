@@ -43,6 +43,7 @@ namespace zpg
 
         public WhiteScreen? Overlay { get; set; }
         private int _teleportDuration { get; set; } = 500;
+        private bool Interacting = false;
 
         public Camera(float aspectRatio)
         {
@@ -98,19 +99,21 @@ namespace zpg
             if (input.IsKeyDown(Keys.S)) horizontalDirection -= Front;
             if (input.IsKeyDown(Keys.A)) horizontalDirection -= Vector3.Cross(Front, Up).Normalized();
             if (input.IsKeyDown(Keys.D)) horizontalDirection += Vector3.Cross(Front, Up).Normalized();
-            if (input.IsKeyDown(Keys.Q)) Overlay!.Teleporting = true;
+            if (input.IsKeyDown(Keys.E)) Interacting = true;
+            else Interacting = false;
 
             if (Overlay!.Teleporting)
             {
                 Overlay.Elapsed += (int)(dT * 1000);
-                if (Overlay.Elapsed < Overlay.DurationMs)
+                if (Overlay.Elapsed < Overlay.DurationMs) // to white
                     Overlay.Alpha = (float)Overlay.Elapsed / Overlay.DurationMs;
-                else
+                else // from white to normal
                 {
                     Transform.Position = _positionToTeleport;
                     Overlay.Alpha = 2 - (float)Overlay.Elapsed / Overlay.DurationMs;
                 }
 
+                // end condition
                 if (Overlay.Elapsed > 2 * Overlay.DurationMs)
                 {
                     Overlay.Alpha = 0;
@@ -147,26 +150,25 @@ namespace zpg
                 CollisionCube.Center += move;
             }
 
-            // check for collision with each object
             foreach (var o in objects)
             {
+                // check first for teleport
+                if (Interacting && o is TeleportPlatform && CollisionCube.IsOnTop(o.CollisionCube))
+                {
+                    float epsilon = 0.3f;
+                    Vector3 position = ((TeleportPlatform)o).LinkedTeleportPlatform!.Transform.Position;
+                    // without epsilon glitches through floor
+                    position.Y += eyesHeight + epsilon;
+                    // teleport
+                    Overlay.DurationMs = _teleportDuration;
+                    Overlay.Teleporting = true;
+                    _positionToTeleport = position;
+                    break;
+                }
+
+                // check for collision with each object
                 if (CollisionCube.DoesCollide(o.CollisionCube))
                 {
-                    if (o is TeleportPlatform && ((TeleportPlatform)o).IsActive)
-                    {
-                        float epsilon = 0.3f;
-                        Vector3 position = ((TeleportPlatform)o).LinkedTeleportPlatform!.Transform.Position;
-                        // without epsilon glitch through floor
-                        position.Y += eyesHeight + epsilon;
-                        // wait a bit before activating teleport back
-                        ((TeleportPlatform)o).StartCooldown(_teleportDuration * 4);
-                        // teleport
-                        Overlay.DurationMs = _teleportDuration;
-                        Overlay.Teleporting = true;
-                        _positionToTeleport = position;
-                        break;
-                    }
-
                     // if collide, check both horizontal and vertical axis for the maximal position that could be done
                     // in the direction the player wants to go
                     // assume that there is no collision and then subtract to avoid collisions

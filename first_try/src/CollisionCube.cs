@@ -31,6 +31,12 @@ namespace zpg
             return (xOverlap && zOverlap && isHigher);
         }
 
+        public bool IsOnTop(CollisionCube other)
+        {
+            float epsilon = 0.1f;
+            return IsAbove(other) && Distance(other) < Yover2 * 2 + other.Yover2 + epsilon;
+        }
+
         public float Distance(CollisionCube other)
         {
             float distanceX = Center.X + Xover2 - (other.Center.X + other.Xover2);
