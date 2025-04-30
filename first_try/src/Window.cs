@@ -10,12 +10,12 @@ namespace zpg
     {
         // main camera
         private Camera _camera = new(1.0f);
-        // all objects in the scene
-        private IObjectsStore _objects = new ObjectsStoreDumb();
+        // all objects in the scene are stored here, it's an abstraction to easily switch between just list and grid-approach
+        private IObjectsStore? _objects = null;
         // lights
-        private DirectionalLight _dirLight = new();
-        private SpotLight _spotLight = new();
-        private List<PointLight> _pointLights = new();
+        private DirectionalLight _dirLight = new(); // the sun in fact
+        private SpotLight _spotLight = new(); // the flashlight of the player
+        private List<PointLight> _pointLights = new(); // aren't used, but are implemented
         // stored level path for future use
         private string _levelPath;
         // stored level for future reference
@@ -26,14 +26,15 @@ namespace zpg
         // window Title contains also the FPS, so this stores what's before
         private string _titlePrefix;
 
-        // TEMPORARY position of lights
+        // At the end, point lights were not implemented.
+        // This is just a little funny thingy to left here.
         private readonly Vector3[] _pointLightPositions =
         {
-            new Vector3(0.0f, 2.0f, 0.0f),
+            // new Vector3(0.0f, 2.0f, 0.0f),
         };
 
         /// <summary>
-        /// Create a new Window based on GameWindow.
+        /// Create a new Window based on GameWindow, with initial WxH, it's title and path to where level is.
         /// </summary>
         public Window(int width, int height, string title, string levelPath) : base(
             GameWindowSettings.Default,
@@ -54,13 +55,14 @@ namespace zpg
 
         /// <summary>
         /// Set timer to count FPS and display them.
+        /// Only do once, in init!
         /// </summary>
         private void SetTimer()
         {
             _timer.Elapsed += (s, e) =>
             {
                 Title = _titlePrefix + " | FPS: " + _fps.ToString();
-                _fps = 0;
+                _fps = 42; // just a joke
             };
             _timer.AutoReset = true;
             _timer.Enabled = true;
@@ -119,10 +121,11 @@ namespace zpg
                 };
             }
 
+            // load level and also add whitescreen for teleport purposes
             LoadLevel(_levelPath, shader);
             var whiteScreen = new WhiteScreen(_camera);
             _camera.Overlay = whiteScreen;
-            _objects.Add(whiteScreen);
+            _objects!.Add(whiteScreen);
 
             // don't render non-visible objects (based on triangle normal)
             GL.Enable(EnableCap.CullFace);
@@ -147,34 +150,41 @@ namespace zpg
             GL.Viewport(0, 0, Size.X, Size.Y);
         }
 
+        /// <summary>
+        /// Clear canvas, set spotlight, draw scene, count fps.
+        /// </summary>
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             // update spotlight based on camera position
             // respect assignment: Y coord is 2.05 meters above ground and depression is 2 degrees
-            _spotLight.Position = _camera.Transform.Position + (0f, 0.35f, 0f);
+            _spotLight.Position = _camera.Transform.Position + (0f, -Camera.PlayerEyesHeight + 2.05f, 0f);
             _spotLight.Direction = _camera.Front + (0.0f, -MathHelper.DegreesToRadians(2), 0.0f);
 
             // render all objects
-            foreach (var obj in _objects.GetAll()) obj.Render(_dirLight, _pointLights, _spotLight);
+            if (_objects is not null)
+                foreach (var obj in _objects.GetAll()) obj.Render(_dirLight, _pointLights, _spotLight);
             SwapBuffers();
 
             // count the fps
             _fps++;
         }
 
+        /// <summary>
+        /// De-facto process keyboard.
+        /// </summary>
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
             var input = KeyboardState;
-            _camera.ProcessKeyboard(input, (float)args.Time, this._objects.GetOnlyRelevant());
+            _camera.ProcessKeyboard(input, (float)args.Time, _objects is not null ? _objects.GetOnlyRelevant() : new RenderObject[0]);
 
             // close game - CapsLk because of my keyboard mapping sometimes fails
             if (input.IsKeyPressed(Keys.Escape) || input.IsKeyPressed(Keys.CapsLock))
             {
                 Close();
             }
-            // release/grab mouse
+            // release/grab mouse - good for temporarily leaving the game
             if (input.IsKeyPressed(Keys.Tab))
             {
                 CursorState = CursorState == CursorState.Grabbed ? CursorState.Normal : CursorState.Grabbed;
