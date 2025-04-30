@@ -144,6 +144,7 @@ namespace zpg
         private void ProcessChar(int x, int y, int z, char ch)
         {
             bool addedWall = false;
+            bool addedFloor = false;
             Console.Write(ch); // output for when loading
 
             switch (ch)
@@ -154,16 +155,19 @@ namespace zpg
                     break;
                 case '-': // floor
                     AddFloor(x, y, z);
+                    addedFloor = true;
                     break;
                 case '+': // ceiling
                     AddFloor(x, y + 1, z);
                     break;
                 case '=': // floor and ceiling
                     AddFloor(x, y, z);
+                    addedFloor = true;
                     AddFloor(x, y + 1, z);
                     break;
                 case >= '0' and <= '9': // teleport
                     AddTeleport(x, y, z, ch);
+                    addedFloor = true;
                     break;
                 case '@': // player
                     CameraStartPosition = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY + Camera.PlayerEyesHeight + 0.4f, z * BlockZ);
@@ -173,16 +177,16 @@ namespace zpg
                     break;
             }
 
-            // add end-of-map walls to the edge of map
-            if (!addedWall)
+            if (!addedWall) // add end-of-map walls to the edge of map
             {
                 if (z == 0) AddWall(x, y, -1, true);
                 if (z == MapZ - 1) AddWall(x, y, MapZ, true);
                 if (x == 0) AddWall(-1, y, z, true);
                 if (x == MapX - 1) AddWall(MapX, y, z, true);
-                if (y == 0) AddWall(x, -1, z, true);
-                if (y == MapY - 1) AddWall(x, MapY, z, true);
             }
+            if (!addedFloor && y == 0) // base-level-floor
+                AddFloor(x, -1, z);
+            if (y == MapY - 1) AddFloor(x, MapY, z); // top-level-ceiling
         }
 
         /// <summary>
@@ -203,7 +207,7 @@ namespace zpg
         private void AddFloor(int x, int y, int z)
         {
             Platform floor = new(Shader, BlockX, PlatformY, BlockZ, Camera, FloorTextureDiffusePath, FloorTextureSpecularPath);
-            floor.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, -PlatformY / 2 + y * BlockY, z * BlockZ);
+            floor.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY - PlatformY, z * BlockZ);
             floor.UpdateCollisionCube();
 
             LevelObjects.Add(floor);
@@ -216,7 +220,7 @@ namespace zpg
         {
             // choose texture based on char
             TeleportPlatform teleport = new(Shader, BlockX, PlatformY, BlockZ, Camera, TeleportTextureDiffuseBasePath + ch + ".png", TeleportTextureSpecularBasePath + ch + ".png");
-            teleport.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, -PlatformY / 2 + y * BlockY, z * BlockZ);
+            teleport.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY - PlatformY, z * BlockZ);
             teleport.UpdateCollisionCube();
 
             LevelObjects.Add(teleport);
