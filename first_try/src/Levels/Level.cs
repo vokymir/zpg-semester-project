@@ -142,7 +142,7 @@ namespace zpg
                     AddTeleport(x, y, z, ch);
                     break;
                 case '@': // player
-                    CameraStartPosition = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY + Camera.eyesHeight + 0.4f, z * BlockZ);
+                    CameraStartPosition = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY + Camera.PlayerEyesHeight + 0.4f, z * BlockZ);
                     AddFloor(x, y, z);
                     break;
                 default: // ignore
