@@ -1,10 +1,17 @@
 namespace zpg
 {
+    /// <summary>
+    /// Have a private dictionary of objects, indexed by their grid position.
+    /// Therefore can get only relevant object, even though in small levels, it's the whole maze probably.
+    /// </summary>
     class ObjectsStoreGrid : IObjectsStore
     {
         private Dictionary<(int, int, int), List<RenderObject>> _objects;
-        public (int X, int Y, int Z) Grid { get; set; } = (3, 3, 3);
+        // grid dimensions, don't have to be a cube
+        public (int X, int Y, int Z) Grid { get; init; } = (3, 3, 3);
+        // needed for knowing which objects are relevant
         private Camera _camera;
+        // generated initially, because I was too lazy to write it down myself...
         private List<(int X, int Y, int Z)> _relativeRelevantGrid = new();
 
         public ObjectsStoreGrid(Camera camera)
