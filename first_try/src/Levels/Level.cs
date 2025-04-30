@@ -180,6 +180,8 @@ namespace zpg
                 if (z == MapZ - 1) AddWall(x, y, MapZ, true);
                 if (x == 0) AddWall(-1, y, z, true);
                 if (x == MapX - 1) AddWall(MapX, y, z, true);
+                if (y == 0) AddWall(x, -1, z, true);
+                if (y == MapY - 1) AddWall(x, MapY, z, true);
             }
         }
 
