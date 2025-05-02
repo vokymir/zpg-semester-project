@@ -126,6 +126,40 @@ Takto zvnějšku proto, aby se docílilo absolutní nezávislosti na snímkovém
 Jelikož je výpočet aktuální průhlednosti overlaye počítán mimo, sice každý snímek,
 ale závisí na deltě uplynulého času, nemá na něj fps žádný dopad.
 
+Pro jednoduchost je efekt pozicován v prostoru kamery, tedy nehýbe se ve světě,
+ale je vždy automaticky před kamerou.
+
+## Sluníčko
+
+Sluníčko je implementováno z textury. V shaderu se aplikuje Phongovo osvětlování,
+kde se odráží světlo podle toho, co je na textuře.
+
+## Textura
+
+Přes třídu Texture, která načte obrázek a nastaví texturu v OpenGL.
+Každý RenderObject má dvě textury, difusní a spekulární mapu - rozlišení
+při osvětlování.
+Hardware assessment neimplementován.
+
+## Návod pro vytváření map
+
+Na prvním řádku: {š}x{h} nebo {š}x{h}x{v}
+Kde {š} je integer určující šířku (X souřadnice), {h} hloubku (Z) a {v} výšku (Y).
+
+Na dalších řádcích mapa, každý charakter je jeden blok v mapě.
+Pokud není zeď na konci mapy, případně podlaha/strop v spodním/horním patře,
+tak se automaticky přidá *void* zeď.
+
+Seznam symbolů a jejich významy:
+
+- 'a' až 'n' je volný prostor, vůbec nic
+- 'o' až 'z' je zeď, neprůchodné pole
+- '@' je startovní pozice hráče na začátku
+- '0' - '9' jsou teleporty
+- '-'
+- '+'
+- '='
+
 ## Povolení užití
 
 Souhlasím s vystavením této semestrální práce na stránkách katedry informatiky
