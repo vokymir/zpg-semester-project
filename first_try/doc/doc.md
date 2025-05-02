@@ -178,7 +178,7 @@ Shader, Cameru. To je problém pro větší mapy, kde můj stroj už nezvládl m
 protože došla GPU paměť (a RAMka používala 10 GB).
 
 Řešení existuje, minimálně se nabízí [Instancing](https://learnopengl.com/Advanced-OpenGL/Instancing),
-který ovšem není implementován, ale problém by dost určitě vyřešil.
+který ovšem není implementován, ale problém by dost pravděpodobně vyřešil.
 
 ## Povolení užití
 
