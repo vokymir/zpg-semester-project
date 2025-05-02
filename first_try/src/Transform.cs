@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 
 namespace zpg
 {
-
     /// <summary>
     /// Encapsulates pos, rot, scale of anything and generates matrix for it.
     /// </summary>

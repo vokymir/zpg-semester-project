@@ -1,7 +1,5 @@
-
 namespace zpg
 {
-
     /// <summary>
     /// Any entity has to have it's transformation matrix.
     /// </summary>

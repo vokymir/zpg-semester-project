@@ -1,4 +1,3 @@
-
 namespace zpg
 {
     // is redundant now

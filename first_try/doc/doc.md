@@ -1,6 +1,6 @@
 # 3D bludiště - Semestrální projekt ZPG
 
-Jakub Vokoun, 30. dubna 2025, javok@students.zcu.cz, A23B0235P
+Jakub Vokoun, 2. května 2025, javok@students.zcu.cz, A23B0235P
 
 ## Spuštění
 
@@ -37,7 +37,7 @@ přidá do pohybu negativní složku Y, úměrnou době pádu podle fyzikálníc
 
 Celý projekt je osově zarovnaný, není proto problém při řešení kolizí použít
 poměrně jednoduššího mechanismu, tedy zkontrolovat kolizi v každém směru (X,Y,Z)
-a pokud nastává, tak upravit pohyb tak, aby nenastala.
+a pokud nastává, upravit pohyb tak, aby nenastala.
 V obou horizontálních směrech os X a Z a zároveň ve směru vertikálním osy Y,
 a pokud posunutím v daném směru vzniká kolize, tak nastaví pohyb v tomto směru
 na maximální možný, který však nekoliduje.
@@ -45,7 +45,7 @@ Tím zároveň vzniká pomalejší pohyb, pokud se hráč *otírá* o stěnu.
 
 ## FPS
 
-Počítadlo snímů za vteřinu je umístěné v názvu okna, protože je to jednodušší,
+Počítadlo snímků za vteřinu je umístěné v názvu okna, protože je to jednodušší,
 než implementovat zobrazování textu. Počítadlo je vpravdě triviální, totiž při
 každém volání funkce *OnRenderFrame()* se k FPS přičte 1 a pomocí systémové
 knihovny Timers vytvořený časovač každou vteřinu zobrazí FPS a opět je vynuluje.
@@ -80,11 +80,12 @@ Implementace rozšíření zahrnovala tyto body:
 - Přidání podlah.
 
 Načítání bylo jednoduše rozšířeno o třetí rozměr, bloky už předtím měly svojí
-Y souřadnici, i když všechny stejnou.
+Y souřadnici, i když všechny stejnou. Nyní bylo třeba přidat akorát logiku během
+načítání souboru s mapou tak, aby se objekty pokládaly do správné výšky.
 
-Gravitace byla implementována ve třídě Camera, kde je pomocí vzorečku:
+Gravitace byla implementována ve třídě Camera, kde je pomocí vzorečku
 $y(t) = \frac{1}{2} g t^2$
-Vyčíslena aktuální změna polohy v deltě času během pádu. Počítá se se
+vyčíslena aktuální změna polohy v deltě času během pádu. Počítá se se
 standardním tíhovým zrychlením 9.81 m/s.
 Aby se předešlo konstantnímu *poskakování kamery*, udržuje si kamera referenci
 na RenderObject, na kterém právě stojí. Pokud existuje, gravitace se neaplikuje.
@@ -114,8 +115,7 @@ Hráč může teleport využít tehdy, pokud na něj vstoupí a stiskne interak�
 klávesu E.
 
 Efekt *FTW&B* byl vytvořen pomocí nového objektu se speciálním shaderem. Tento
-objekt je přidán do scény ve třídě Window po načtení Levelu. Po dodání vlastní
-textury může být upraven na *fade to any image and back*.
+objekt je přidán do scény ve třídě Window po načtení Levelu.
 Objekt WhiteScreen si udržuje informaci o tom, jakou má mít průhlednost,
 probíhá-li právě teleport. Pokud ano, tak jak dlouho již probíhá a jaký je
 celkový čas efektu. Právě tyto informace slouží k ovládání zvnějšku! Pouze
@@ -128,6 +128,12 @@ ale závisí na deltě uplynulého času, nemá na něj fps žádný dopad.
 
 Pro jednoduchost je efekt pozicován v prostoru kamery, tedy nehýbe se ve světě,
 ale je vždy automaticky před kamerou.
+
+Dohromady je při tvorbě mapy možno vytvořit 0 až 10 teleportů, tedy
+0 až 20 teleportačních platforem. Každá dvojice platforem má stejnou texturu,
+přičemž pro každou dvojici je vytvořena speciální, pro snadnost rozlišení.
+Teleportů by mohlo být i více, v závislosti na zvoleném rozsahu ASCII symbolů,
+ale bylo rozhodnuto, že deset stačí.
 
 ## Sluníčko
 
@@ -147,6 +153,9 @@ Na prvním řádku: {š}x{h} nebo {š}x{h}x{v}
 Kde {š} je integer určující šířku (X souřadnice), {h} hloubku (Z) a {v} výšku (Y).
 
 Na dalších řádcích mapa, každý charakter je jeden blok v mapě.
+Šířka mapy se rovná šířce řádku, hloubka mapy je počet řádků na patro,
+výška je počet opakování pater.
+Dohromady by tedy soubor měl mít řádků: 1 + š \* v (\* h)
 Pokud není zeď na konci mapy, případně podlaha/strop v spodním/horním patře,
 tak se automaticky přidá *void* zeď.
 
@@ -156,9 +165,20 @@ Seznam symbolů a jejich významy:
 - 'o' až 'z' je zeď, neprůchodné pole
 - '@' je startovní pozice hráče na začátku
 - '0' - '9' jsou teleporty
-- '-'
-- '+'
-- '='
+- '-' je podlaha
+- '+' je strop
+- '=' je podlaha i strop
+
+## Nedostatky
+
+V aplikaci se mnohokrát opakují identické objekty, například zdi, které se liší pouze
+v pozici. Každý takový objekt má ale vlastní hromadu informací, které jsou sice stejné,
+ale v paměti zabírají místo vícekrát. Je to primárně textura, pak i reference na
+Shader, Cameru. To je problém pro větší mapy, kde můj stroj už nezvládl mapu 50x80,
+protože došla GPU paměť (a RAMka používala 10 GB).
+
+Řešení existuje, minimálně se nabízí [Instancing](https://learnopengl.com/Advanced-OpenGL/Instancing),
+který ovšem není implementován, ale problém by dost určitě vyřešil.
 
 ## Povolení užití
 
