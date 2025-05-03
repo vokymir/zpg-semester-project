@@ -139,9 +139,8 @@ celkový čas efektu. Právě tyto informace slouží k ovládání zvnějšku! 
 průhlednost se předává fragment shaderu, který na jejím základě (ne)vykresluje.
 
 Celý efekt je ovládán z Camery během události Window.OnRenderFrame -> Camera.ProcessKeyboard.
-Takto zvnějšku proto, aby se docílilo absolutní nezávislosti na snímkovém kmitočtu.
-Jelikož je výpočet aktuální průhlednosti overlaye počítán mimo, sice každý snímek,
-ale závisí na deltě uplynulého času, nemá na něj fps žádný dopad.
+Jelikož je výpočet aktuální průhlednosti overlaye počítán v závislosti na uplynulém
+času, nemá na něj fps žádný dopad.
 
 Pro jednoduchost je efekt pozicován v prostoru kamery, tedy nehýbe se ve světě,
 ale je vždy automaticky před kamerou.
