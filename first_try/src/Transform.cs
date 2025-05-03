@@ -52,6 +52,9 @@ namespace zpg
             return true;
         }
 
+        /// <summary>
+        /// Snap position to nearest point on grid.
+        /// </summary>
         public void SnapPositionToGrid()
         {
             Vector3 snapped = _position;
@@ -63,12 +66,17 @@ namespace zpg
             _position = snapped;
         }
 
+        /// <summary>
+        /// Snap given position's one coordinate (0=x,1=y,2=z) to the grid.
+        /// Must be instance-based function, because it uses the grid precision of that instance.
+        /// RoundUp is for good measure, to prevent edge cases.
+        /// Unless player is going diagonally to cube, works flawlessly.
+        /// </summary>
         public Vector3 SnapOneCoordToGrid(Vector3 position, int xyz, bool roundUp)
         {
             position[xyz] = MathF.Round(position[xyz] * InvSnappingPrecision) * SnappingPrecision;
 
-            if (!roundUp)
-                position[xyz] -= SnappingPrecision;
+            position[xyz] += (roundUp ? 1 : -1) * SnappingPrecision;
 
             return position;
         }
