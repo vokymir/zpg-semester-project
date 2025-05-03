@@ -10,7 +10,7 @@ namespace zpg
     public class Window : GameWindow
     {
         // main camera
-        private Camera _camera = new(1.0f);
+        private Camera _camera;
         // all objects in the scene are stored here, it's an abstraction to easily switch between just list and grid-approach
         private IObjectsStore? _objects = null;
         // lights
@@ -54,6 +54,7 @@ namespace zpg
             this._sw = new();
             _sw.Start();
             this._fps = new();
+            this._camera = new(Size.X / (float)Size.Y, _sw);
         }
 
 
@@ -62,8 +63,6 @@ namespace zpg
         /// </summary>
         protected override void OnLoad()
         {
-            _camera = new Camera(Size.X / (float)Size.Y);
-
             CursorState = CursorState.Grabbed;
 
             Shader shader = new Shader("./Shaders/shader.vert", "./Shaders/lighting.frag");

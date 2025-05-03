@@ -13,8 +13,8 @@ class WhiteScreen : RenderObject
 
     // if teleporting is active
     public bool Teleporting { get; set; } = false;
-    // how long did the animation ran for
-    public int Elapsed { get; set; } = 0;
+    // when teleport started
+    public long Started { get; set; } = 0;
     // how long the animation will be
     public int DurationMs { get; set; } = 1000;
 

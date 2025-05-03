@@ -32,6 +32,8 @@ namespace zpg
         // speed of gravity - generally known number, in m * s ^ -1
         private float _gravitySpeed = 9.81f;
 
+        private System.Diagnostics.Stopwatch _sw;
+
         public CollisionCube CollisionCube { get; private set; } = new CollisionCube()
         {
             Center = new Vector3(0, 0, 0),
@@ -51,7 +53,7 @@ namespace zpg
         // run
         private float _moveSpeedMultiplier = 1.0f;
 
-        public Camera(float aspectRatio)
+        public Camera(float aspectRatio, System.Diagnostics.Stopwatch sw)
         {
             // make collision cube move with camera automagically
             Transform.PropertyChanged += (s, e) =>
@@ -61,6 +63,7 @@ namespace zpg
                 CollisionCube.Center = newCenter;
             };
             Resize(aspectRatio);
+            _sw = sw;
         }
 
         public void Resize(float aspectRatio) => this.ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver2, aspectRatio, 0.1f, 100.0f);
@@ -116,21 +119,20 @@ namespace zpg
             // if teleport is active, don't do anything else
             if (Overlay!.Teleporting)
             {
-                Overlay.Elapsed += (int)(dT * 1000);
-                if (Overlay.Elapsed < Overlay.DurationMs) // to white
-                    Overlay.Alpha = (float)Overlay.Elapsed / Overlay.DurationMs;
+                var elapsed = _sw.ElapsedMilliseconds - Overlay.Started;
+                if (elapsed < Overlay.DurationMs) // to white
+                    Overlay.Alpha = (float)elapsed / Overlay.DurationMs;
                 else // from white to normal
                 {
                     Transform.Position = _positionToTeleport;
-                    Overlay.Alpha = 2 - (float)Overlay.Elapsed / Overlay.DurationMs;
+                    Overlay.Alpha = 2 - (float)elapsed / Overlay.DurationMs;
                 }
 
                 // end condition
-                if (Overlay.Elapsed > 2 * Overlay.DurationMs)
+                if (elapsed > 2 * Overlay.DurationMs)
                 {
                     Overlay.Alpha = 0;
                     Overlay.Teleporting = false;
-                    Overlay.Elapsed = 0;
                 }
                 return;
             }
@@ -184,6 +186,7 @@ namespace zpg
                     // teleport
                     Overlay.DurationMs = _teleportDurationMsOver2;
                     Overlay.Teleporting = true;
+                    Overlay.Started = _sw.ElapsedMilliseconds;
                     // store the position, but go there only when the screen is completely white
                     _positionToTeleport = position;
                     break;
