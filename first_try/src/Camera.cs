@@ -207,7 +207,7 @@ namespace zpg
                     CollisionCube.Center += new Vector3(0, -move.Y, -move.Z);
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
-                        if (CollisionCube.Center.X > o.CollisionCube.Center.X)
+                        if (CollisionCube.Center.X >= o.CollisionCube.Center.X)
                         {
                             maxXposition = o.CollisionCube.Center.X + o.CollisionCube.Xover2 + CollisionCube.Xover2;
                             roundUp[0] = true;
@@ -221,16 +221,16 @@ namespace zpg
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
                         // without epsilon, it sometimes allowed to jump through objects
-                        float epsilon = 0.05f;
+                        float epsilon = 0.02f;
 
                         // player is higher than the object
-                        if (CollisionCube.Center.Y + epsilon > o.CollisionCube.Center.Y)
+                        if (CollisionCube.Center.Y + epsilon >= o.CollisionCube.Center.Y)
                         {
                             maxYposition = o.CollisionCube.Center.Y + o.CollisionCube.Yover2 + CollisionCube.Yover2 + epsilon;
                             roundUp[1] = true;
                             _standingOnObject = o;
                         }
-                        else // now not used, good for jumps
+                        else if (CollisionCube.Center.Y < o.CollisionCube.Center.Y)// now not used, good for jumps
                         {
                             maxYposition = o.CollisionCube.Center.Y - o.CollisionCube.Yover2 - CollisionCube.Yover2 - epsilon;
                         }
@@ -240,7 +240,7 @@ namespace zpg
                     CollisionCube.Center += new Vector3(0, -move.Y, move.Z);
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
-                        if (CollisionCube.Center.Z > o.CollisionCube.Center.Z)
+                        if (CollisionCube.Center.Z >= o.CollisionCube.Center.Z)
                         {
                             maxZposition = o.CollisionCube.Center.Z + o.CollisionCube.Zover2 + CollisionCube.Zover2;
                             roundUp[2] = true;

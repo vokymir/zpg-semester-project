@@ -102,12 +102,14 @@ $y(t) = \frac{1}{2} g t^2$
 vyčíslena aktuální změna polohy v deltě času během pádu. Počítá se se
 standardním tíhovým zrychlením 9.81 m/s. Kvůli zaokrouhlovací chybě se však
 vzdálenost pro malé dT rovnala nule, proto se skutečně počítá ze vzorečku
-$y(t) = \frac{1}{2} g t$
+$y(t) = \frac{1}{2} g t$. Hráč začne padat ve chvíli, kdy pod jeho středem
+není nic - trochu rozdíl od klasických her, které hráčům více odpouští.
 
 Aby se předešlo konstantnímu *poskakování kamery*, udržuje si kamera referenci
 na RenderObject, na kterém právě stojí. Pokud existuje, gravitace se neaplikuje.
 Pokud vyjde mimo objekt, na kterém stojí, pokusí se najít jiný, když ale
-žádný takový není, tak začne padat.
+žádný takový není, tak začne padat. Toto řešení stále způsobuje poskakování,
+ale pouze při přechodu mezi bloky.
 
 Podlahy jsou implementovány jako kvádry s malou výškou. Nastal problém
 s propadáváním skrz podlahu, pokud byla moc nízká. Všechno řeší různé epsilony,
