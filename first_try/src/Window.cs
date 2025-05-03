@@ -21,8 +21,8 @@ namespace zpg
         // stored level for future reference
         private Level? _level;
         // timer and fps for calculating fps
-        private System.Timers.Timer _timer = new System.Timers.Timer(1000);
-        private int _fps;
+        private double _elapsedSeconds = 0;
+        private Queue<double> _fps;
         // window Title contains also the FPS, so this stores what's before
         private string _titlePrefix;
 
@@ -50,23 +50,9 @@ namespace zpg
         {
             this._levelPath = levelPath;
             this._titlePrefix = title;
-            SetTimer();
+            this._fps = new();
         }
 
-        /// <summary>
-        /// Set timer to count FPS and display them.
-        /// Only do once, in init!
-        /// </summary>
-        private void SetTimer()
-        {
-            _timer.Elapsed += (s, e) =>
-            {
-                Title = _titlePrefix + " | FPS: " + _fps.ToString();
-                _fps = 42; // just a joke
-            };
-            _timer.AutoReset = true;
-            _timer.Enabled = true;
-        }
 
         /// <summary>
         /// Initialize camera, shader, lights, load level and enable cullface, depthtest, debug output etc.
@@ -168,7 +154,11 @@ namespace zpg
             SwapBuffers();
 
             // count the fps
-            _fps++;
+            _elapsedSeconds += args.Time;
+            _fps.Enqueue(_elapsedSeconds);
+            while (_fps.Count > 0 && _fps.Peek() < _elapsedSeconds - 1)
+                _fps.Dequeue();
+            Title = _titlePrefix + " | FPS: " + _fps.Count;
         }
 
         /// <summary>
