@@ -194,13 +194,17 @@ namespace zpg
                     float maxXposition = CollisionCube.Center.X;
                     float maxYposition = CollisionCube.Center.Y;
                     float maxZposition = CollisionCube.Center.Z;
+                    bool[] roundUp = [false, false, false];
 
                     // check collision on X axis (forget Y,Z)
                     CollisionCube.Center += new Vector3(0, -move.Y, -move.Z);
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
                         if (CollisionCube.Center.X > o.CollisionCube.Center.X)
+                        {
                             maxXposition = o.CollisionCube.Center.X + o.CollisionCube.Xover2 + CollisionCube.Xover2;
+                            roundUp[0] = true;
+                        }
                         else
                             maxXposition = o.CollisionCube.Center.X - o.CollisionCube.Xover2 - CollisionCube.Xover2;
                     }
@@ -216,6 +220,7 @@ namespace zpg
                         if (CollisionCube.Center.Y + epsilon > o.CollisionCube.Center.Y)
                         {
                             maxYposition = o.CollisionCube.Center.Y + o.CollisionCube.Yover2 + CollisionCube.Yover2 + epsilon;
+                            roundUp[1] = true;
                             _standingOnObject = o;
                         }
                         else // now not used, good for jumps
@@ -229,18 +234,27 @@ namespace zpg
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
                         if (CollisionCube.Center.Z > o.CollisionCube.Center.Z)
+                        {
                             maxZposition = o.CollisionCube.Center.Z + o.CollisionCube.Zover2 + CollisionCube.Zover2;
+                            roundUp[2] = true;
+                        }
                         else
                             maxZposition = o.CollisionCube.Center.Z - o.CollisionCube.Zover2 - CollisionCube.Zover2;
                     }
                     // revert to no move at all
                     CollisionCube.Center += new Vector3(0, 0, -move.Z);
 
+                    // snapping to grid
+                    var vect = new Vector3(maxXposition, maxYposition, maxZposition);
+                    Transform.SnapOneCoordToGrid(vect, 0, roundUp[0]);
+                    Transform.SnapOneCoordToGrid(vect, 1, roundUp[1]);
+                    Transform.SnapOneCoordToGrid(vect, 2, roundUp[2]);
+
                     // calculate the maximum possible move
                     move = new Vector3(
-                            maxXposition - CollisionCube.Center.X,
-                            maxYposition - CollisionCube.Center.Y,
-                            maxZposition - CollisionCube.Center.Z
+                            vect.X - CollisionCube.Center.X,
+                            vect.Y - CollisionCube.Center.Y,
+                            vect.Z - CollisionCube.Center.Z
                             );
 
                     // try the edited move in next iteration
@@ -250,7 +264,6 @@ namespace zpg
             // this move is final, it doesn't collide with any nearby object
             // therefore the player can be safely moved
             Transform.Position += move;
-            Transform.SnapPositionToGrid(0.001f);
         }
     }
 }

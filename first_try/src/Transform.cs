@@ -17,6 +17,19 @@ namespace zpg
         protected Vector3 _scale = Vector3.One;
         public Vector3 Scale { get => _scale; set => SetField(ref _scale, value); }
 
+        // position is always snapped to grid of some precision to avoid float cumulative errors
+        private float _snappingPrecision = 0.01f;
+        private float InvSnappingPrecision = 100f;
+        public float SnappingPrecision
+        {
+            get => _snappingPrecision;
+            set
+            {
+                _snappingPrecision = value;
+                InvSnappingPrecision = 1 / value;
+            }
+        }
+
         public Matrix4 GetMatrix()
         {
             return Matrix4.CreateScale(_scale) *
@@ -39,16 +52,25 @@ namespace zpg
             return true;
         }
 
-        public void SnapPositionToGrid(float precision = 0.01f)
+        public void SnapPositionToGrid()
         {
             Vector3 snapped = _position;
-            float invPrecision = 1f / precision;
 
-            snapped.X = MathF.Round(snapped.X * invPrecision) * precision;
-            snapped.Y = MathF.Round(snapped.Y * invPrecision) * precision;
-            snapped.Z = MathF.Round(snapped.Z * invPrecision) * precision;
+            snapped.X = MathF.Round(snapped.X * InvSnappingPrecision) * SnappingPrecision;
+            snapped.Y = MathF.Round(snapped.Y * InvSnappingPrecision) * SnappingPrecision;
+            snapped.Z = MathF.Round(snapped.Z * InvSnappingPrecision) * SnappingPrecision;
 
             _position = snapped;
+        }
+
+        public Vector3 SnapOneCoordToGrid(Vector3 position, int xyz, bool roundUp)
+        {
+            position[xyz] = MathF.Round(position[xyz] * InvSnappingPrecision) * SnappingPrecision;
+
+            if (!roundUp)
+                position[xyz] -= SnappingPrecision;
+
+            return position;
         }
     }
 }
