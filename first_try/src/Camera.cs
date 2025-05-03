@@ -100,6 +100,8 @@ namespace zpg
         /// </summary>
         public void ProcessKeyboard(KeyboardState input, float dT, IEnumerable<RenderObject> objects)
         {
+            _interacting = input.IsKeyDown(Keys.E);
+
             // ===== TELEPORT =====
             // if teleport is active, don't do anything else
             if (Overlay!.Teleporting)
@@ -134,18 +136,13 @@ namespace zpg
                 if (input.IsKeyDown(Keys.S)) horizontalDirection -= Front;
                 if (input.IsKeyDown(Keys.A)) horizontalDirection -= Vector3.Cross(Front, Up).Normalized();
                 if (input.IsKeyDown(Keys.D)) horizontalDirection += Vector3.Cross(Front, Up).Normalized();
-                _interacting = input.IsKeyDown(Keys.E);
 
-                // avoid flying
-                horizontalDirection.Y = 0;
+                horizontalDirection.Y = 0; // avoid flying
 
                 // move is the combination of horizontal and vertical direction
                 if (horizontalDirection.LengthSquared > 0) move += horizontalDirection.Normalized() * PlayerSpeed * dT;
             }
             { // === GRAVITY ===
-                // try horizontal move, to check gravity
-                CollisionCube.Center += move;
-
                 // if not standing on object anymore, start falling
                 if (_standingOnObject is not null && !CollisionCube.IsAbove(_standingOnObject.CollisionCube))
                     _standingOnObject = null;
@@ -153,22 +150,16 @@ namespace zpg
                 // gravity
                 if (_standingOnObject is null)
                 {
-                    // distance y(t):
-                    // y(t) = 1/2 * g * t^2
-                    // [y] = m, [g] = m*s^-2, [t] = s
+                    // falling distance: y(t) = 1/2 * g * t^2 ; [y] = m, [g] = m*s^-2, [t] = s
                     // for more info, see https://en.wikipedia.org/wiki/Free_fall#Uniform_gravitational_field_without_air_resistance
                     float y_t = 0.5f * _gravitySpeed * dT;
                     verticalDirection -= new Vector3(0.0f, y_t, 0.0f);
                 }
 
                 // only if gravity did something, update the move
-                if (verticalDirection.LengthSquared > 0)
-                {
-                    CollisionCube.Center -= move;
-                    move += verticalDirection;
-                    CollisionCube.Center += move;
-                }
+                if (verticalDirection.LengthSquared > 0) move += verticalDirection;
             }
+            CollisionCube.Center += move;
 
             // move is iteratively made smaller each time player collides with something
             foreach (var o in objects)
@@ -213,24 +204,15 @@ namespace zpg
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
                         // without epsilon, it sometimes allowed to jump through objects
-                        float epsilon = 0.03f;
+                        float epsilon = 0.05f;
 
                         // player is higher than the object
-                        if (CollisionCube.Center.Y > o.CollisionCube.Center.Y)
+                        if (CollisionCube.Center.Y + epsilon > o.CollisionCube.Center.Y)
                         {
                             maxYposition = o.CollisionCube.Center.Y + o.CollisionCube.Yover2 + CollisionCube.Yover2 + epsilon;
-                            // if already standing on something, compare the distances
-                            if (_standingOnObject is not null &&
-                                CollisionCube.IsAbove(o.CollisionCube) &&
-                                CollisionCube.Distance(_standingOnObject.CollisionCube) > CollisionCube.Distance(o.CollisionCube))
-                                _standingOnObject = o;
-                            // else just save the object
-                            else if (_standingOnObject is null)
-                            {
-                                _standingOnObject = o;
-                            }
+                            _standingOnObject = o;
                         }
-                        else
+                        else // now not used, good for jumps
                         {
                             maxYposition = o.CollisionCube.Center.Y - o.CollisionCube.Yover2 - CollisionCube.Yover2 - epsilon;
                         }

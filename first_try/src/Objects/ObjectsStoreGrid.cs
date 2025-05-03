@@ -8,7 +8,7 @@ namespace zpg
     {
         private Dictionary<(int, int, int), List<RenderObject>> _objects;
         // grid dimensions, don't have to be a cube
-        public (int X, int Y, int Z) Grid { get; init; } = (2, 2, 2);
+        public (int X, int Y, int Z) Grid { get; init; } = (3, 3, 3);
         // needed for knowing which objects are relevant
         private Camera _camera;
         // generated initially, because I was too lazy to write it down myself...

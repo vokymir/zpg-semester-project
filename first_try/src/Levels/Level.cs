@@ -34,7 +34,7 @@ namespace zpg
         public float BlockX { get; set; } = 2.0f;
         public float BlockY { get; set; } = 3.0f;
         public float BlockZ { get; set; } = 2.0f;
-        public float PlatformY { get; set; } = 0.1f;
+        public float PlatformY { get; set; } = 0.3f;
 
         // dimensions of the map
         public int MapX { get; set; }
