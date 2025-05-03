@@ -16,10 +16,16 @@ namespace zpg
         // Except for Teleports, that is why it's called BasePath
         public string VoidTextureDiffusePath { get; set; } = "./Textures/Void.png";
         public string VoidTextureSpecularPath { get; set; } = "./Textures/VoidSpecular.png";
+        public Texture? VoidTextureDiffuse { get; set; }
+        public Texture? VoidTextureSpecular { get; set; }
         public string WallTextureDiffusePath { get; set; } = "./Textures/Wall.png";
         public string WallTextureSpecularPath { get; set; } = "./Textures/WallSpecular.png";
+        public Texture? WallTextureDiffuse { get; set; }
+        public Texture? WallTextureSpecular { get; set; }
         public string FloorTextureDiffusePath { get; set; } = "./Textures/Floor.png";
         public string FloorTextureSpecularPath { get; set; } = "./Textures/FloorSpecular.png";
+        public Texture? FloorTextureDiffuse { get; set; }
+        public Texture? FloorTextureSpecular { get; set; }
         public string TeleportTextureDiffuseBasePath { get; set; } = "./Textures/Teleports/TeleportChar";
         public string TeleportTextureSpecularBasePath { get; set; } = "./Textures/Teleports/TeleportChar";
 
@@ -179,26 +185,55 @@ namespace zpg
 
             if (!addedWall) // add end-of-map walls to the edge of map
             {
-                if (z == 0) AddWall(x, y, -1, true);
-                if (z == MapZ - 1) AddWall(x, y, MapZ, true);
-                if (x == 0) AddWall(-1, y, z, true);
-                if (x == MapX - 1) AddWall(MapX, y, z, true);
+                if (z == 0) AddVoid(x, y, -1);
+                if (z == MapZ - 1) AddVoid(x, y, MapZ);
+                if (x == 0) AddVoid(-1, y, z);
+                if (x == MapX - 1) AddVoid(MapX, y, z);
             }
             if (!addedFloor && y == 0) // base-level-floor
-                AddFloor(x, -1, z);
+                AddFloor(x, 0, z);
             if (y == MapY - 1) AddFloor(x, MapY, z); // top-level-ceiling
         }
 
         /// <summary>
         /// Add one wall of BlockDimensions, position it.
         /// </summary>
-        private void AddWall(int x, int y, int z, bool isVoid = false)
+        private void AddWall(int x, int y, int z)
         {
-            Cube wall = new Cube(Shader, BlockX, BlockY, BlockZ, Camera, isVoid ? VoidTextureDiffusePath : WallTextureDiffusePath, isVoid ? VoidTextureSpecularPath : WallTextureSpecularPath);
+            Cube wall;
+            if (WallTextureDiffuse is null || WallTextureSpecular is null)
+            {
+                wall = new Cube(Shader, BlockX, BlockY, BlockZ, Camera, WallTextureDiffusePath, WallTextureSpecularPath);
+                WallTextureDiffuse = wall._diffuseMap;
+                WallTextureSpecular = wall._specularMap;
+            }
+            else
+            {
+                wall = new Cube(Shader, BlockX, BlockY, BlockZ, Camera, WallTextureDiffuse, WallTextureSpecular);
+            }
             wall.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, BlockY / 2 + y * BlockY, z * BlockZ);
             wall.UpdateCollisionCube();
 
             LevelObjects.Add(wall);
+        }
+
+        private void AddVoid(int x, int y, int z)
+        {
+            Cube @void;
+            if (VoidTextureDiffuse is null || VoidTextureSpecular is null)
+            {
+                @void = new Cube(Shader, BlockX, BlockY, BlockZ, Camera, VoidTextureDiffusePath, VoidTextureSpecularPath);
+                VoidTextureDiffuse = @void._diffuseMap;
+                VoidTextureSpecular = @void._specularMap;
+            }
+            else
+            {
+                @void = new Cube(Shader, BlockX, BlockY, BlockZ, Camera, VoidTextureDiffuse, VoidTextureSpecular);
+            }
+            @void.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, BlockY / 2 + y * BlockY, z * BlockZ);
+            @void.UpdateCollisionCube();
+
+            LevelObjects.Add(@void);
         }
 
         /// <summary>
@@ -206,7 +241,17 @@ namespace zpg
         /// </summary>
         private void AddFloor(int x, int y, int z)
         {
-            Platform floor = new(Shader, BlockX, PlatformY, BlockZ, Camera, FloorTextureDiffusePath, FloorTextureSpecularPath);
+            Platform floor;
+            if (FloorTextureDiffuse is null || FloorTextureSpecular is null)
+            {
+                floor = new(Shader, BlockX, PlatformY, BlockZ, Camera, FloorTextureDiffusePath, FloorTextureSpecularPath);
+                FloorTextureDiffuse = floor._diffuseMap;
+                FloorTextureSpecular = floor._specularMap;
+            }
+            else
+            {
+                floor = new(Shader, BlockX, PlatformY, BlockZ, Camera, FloorTextureDiffuse, FloorTextureSpecular);
+            }
             floor.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY - PlatformY, z * BlockZ);
             floor.UpdateCollisionCube();
 

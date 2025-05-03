@@ -17,10 +17,30 @@ namespace zpg
         { }
 
         /// <summary>
+        /// Overload for existing texures.
+        /// </summary>
+        public Cube(Shader shader, float width, float height, float depth, Camera camera, Texture diffuseTex, Texture specularTex) :
+             this(shader, width, height, depth, Cube.MaxDimensionOver2(width, height, depth), camera, diffuseTex, specularTex)
+        { }
+
+        /// <summary>
         /// Generate vertices and indices based on what was given - it extends functionality of public constructor.
         /// </summary>
         private Cube(Shader shader, float width, float height, float depth, float maxDimOver2, Camera camera, string diffuseMap, string specularMap)
             : base(shader, camera, GenerateVertices(width, height, depth, maxDimOver2), GenerateIndices(), diffuseMap, specularMap)
+        {
+            Transform.Scale = Cube.DefaultScale(maxDimOver2);
+            CollisionCube.Xover2 = width * 0.5f * Transform.Scale.X;
+            CollisionCube.Yover2 = height * 0.5f * Transform.Scale.Y;
+            CollisionCube.Zover2 = depth * 0.5f * Transform.Scale.Z;
+            CollisionCube.Center = Transform.Position;
+        }
+
+        /// <summary>
+        /// Overload for existing textures.
+        /// </summary>
+        private Cube(Shader shader, float width, float height, float depth, float maxDimOver2, Camera camera, Texture diffuseTex, Texture specularTex)
+            : base(shader, camera, GenerateVertices(width, height, depth, maxDimOver2), GenerateIndices(), diffuseTex, specularTex)
         {
             Transform.Scale = Cube.DefaultScale(maxDimOver2);
             CollisionCube.Xover2 = width * 0.5f * Transform.Scale.X;

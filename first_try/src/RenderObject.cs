@@ -13,9 +13,9 @@ namespace zpg
         protected int IndexCount;
 
         // diffuse map for basic texture
-        protected Texture _diffuseMap;
+        public Texture _diffuseMap { get; }
         // specular map for making the specular lighting be more cool
-        protected Texture _specularMap;
+        public Texture _specularMap { get; }
 
         protected Camera _camera;
 
@@ -59,6 +59,43 @@ namespace zpg
             _specularMap = Texture.LoadFromFile(specularMap);
         }
 
+        public RenderObject(Shader shader, Camera camera, float[] vertices, uint[] indices, Texture diffuseTex, Texture specularTex)
+        {
+            Shader = shader;
+            _camera = camera;
+
+            VAO = GL.GenVertexArray();
+            VBO = GL.GenBuffer();
+            EBO = GL.GenBuffer();
+
+            GL.BindVertexArray(VAO);
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
+
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, EBO);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
+
+            // All must be in format:
+            // position normal  texture coordinates
+            // X,Y,Z,   X,Y,Z,  X,Y
+            var position = shader.GetAttribLocation("aPos");
+            var normal = shader.GetAttribLocation("aNormal");
+            var tex = shader.GetAttribLocation("aTexCoords");
+
+            GL.VertexAttribPointer(position, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
+            GL.VertexAttribPointer(normal, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
+            GL.VertexAttribPointer(tex, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
+
+            GL.EnableVertexAttribArray(position);
+            GL.EnableVertexAttribArray(normal);
+            GL.EnableVertexAttribArray(tex);
+
+            IndexCount = indices.Length;
+
+            _diffuseMap = diffuseTex;
+            _specularMap = specularTex;
+        }
         protected virtual void PreRender() { }
 
         // simple draw of VAO, assuming triangles as primitive type
