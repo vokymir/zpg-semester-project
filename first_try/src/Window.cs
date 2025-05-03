@@ -3,6 +3,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Mathematics;
+using System.Diagnostics;
 
 namespace zpg
 {
@@ -21,8 +22,8 @@ namespace zpg
         // stored level for future reference
         private Level? _level;
         // timer and fps for calculating fps
-        private double _elapsedSeconds = 0;
-        private Queue<double> _fps;
+        private Stopwatch _sw;
+        private Queue<long> _fps;
         // window Title contains also the FPS, so this stores what's before
         private string _titlePrefix;
 
@@ -50,6 +51,8 @@ namespace zpg
         {
             this._levelPath = levelPath;
             this._titlePrefix = title;
+            this._sw = new();
+            _sw.Start();
             this._fps = new();
         }
 
@@ -154,9 +157,9 @@ namespace zpg
             SwapBuffers();
 
             // count the fps
-            _elapsedSeconds += args.Time;
-            _fps.Enqueue(_elapsedSeconds);
-            while (_fps.Count > 0 && _fps.Peek() < _elapsedSeconds - 1)
+            long time = _sw.ElapsedMilliseconds;
+            _fps.Enqueue(time);
+            while (_fps.Count > 0 && _fps.Peek() < time - 1000)
                 _fps.Dequeue();
             Title = _titlePrefix + " | FPS: " + _fps.Count;
         }
