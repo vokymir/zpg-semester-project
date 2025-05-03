@@ -8,6 +8,13 @@ V příkazové řádce ve složce *src* spustit *dotnet run*.
 Lze předat prvním parametrem cestu k mapě (relativní vůči aktuální cestě).
 Při absenci parametru se načte výchozí mapa ve složce *src/Levels*.
 
+## Ovládání
+
+Myš - směr pohledu kamery.
+WASD - chůze daným směrem.
+E - interakce s objekty (aktivace teleportu).
+shift - běh.
+
 ## Životní cyklus aplikace
 
 Vstupním bodem je třída App, která pouze zpracuje parametry příkazové řádky
@@ -43,12 +50,19 @@ a pokud posunutím v daném směru vzniká kolize, tak nastaví pohyb v tomto sm
 na maximální možný, který však nekoliduje.
 Tím zároveň vzniká pomalejší pohyb, pokud se hráč *otírá* o stěnu.
 
+### Snap-grid
+
+Aby se předešlo kumulativní chybě vzniklé nasčítáním chyb ve floatových číslech,
+konkrétně v pozici kamery, tak je implementována "mřížka", po které se
+kamera pohybuje. Prakticky je to omezení přesnosti floatu na pouze několik málo
+desetinných míst tak, aby se nemohla chyba kumulovat, ale hráč si ničeho nevšiml.
+
 ## FPS
 
 Počítadlo snímků za vteřinu je umístěné v názvu okna, protože je to jednodušší,
-než implementovat zobrazování textu. Počítadlo je vpravdě triviální, totiž při
-každém volání funkce *OnRenderFrame()* se k FPS přičte 1 a pomocí systémové
-knihovny Timers vytvořený časovač každou vteřinu zobrazí FPS a opět je vynuluje.
+než implementovat zobrazování textu. Okno má vlastní stopky a při každém
+renderování scény si uloží aktuální čas do fronty. Poté z fronty odstraní všechny
+moc staré záznamy a vypíše FPS jako počet objektů ve frontě.
 
 ## Načítání levelů
 
@@ -86,13 +100,16 @@ načítání souboru s mapou tak, aby se objekty pokládaly do správné výšky
 Gravitace byla implementována ve třídě Camera, kde je pomocí vzorečku
 $y(t) = \frac{1}{2} g t^2$
 vyčíslena aktuální změna polohy v deltě času během pádu. Počítá se se
-standardním tíhovým zrychlením 9.81 m/s.
+standardním tíhovým zrychlením 9.81 m/s. Kvůli zaokrouhlovací chybě se však
+vzdálenost pro malé dT rovnala nule, proto se skutečně počítá ze vzorečku
+$y(t) = \frac{1}{2} g t$
+
 Aby se předešlo konstantnímu *poskakování kamery*, udržuje si kamera referenci
 na RenderObject, na kterém právě stojí. Pokud existuje, gravitace se neaplikuje.
-Pokud ale vyjde mimo objekt, na kterém stojí, pokusí se najít jiný, když ale
+Pokud vyjde mimo objekt, na kterém stojí, pokusí se najít jiný, když ale
 žádný takový není, tak začne padat.
 
-Podlahy jsou implementovány jako kostky s velmi malou výškou. Nastal problém
+Podlahy jsou implementovány jako kvádry s malou výškou. Nastal problém
 s propadáváním skrz podlahu, pokud byla moc nízká. Všechno řeší různé epsilony,
 které kontrují nepřesnost floatových čísel. Podlaha s nenulovou výškou je tedy zarovnána
 tak, že její vrchní část je ve stejné výšce jako případná kostka, aby nenastaly problémy
@@ -169,16 +186,19 @@ Seznam symbolů a jejich významy:
 - '+' je strop
 - '=' je podlaha i strop
 
-## Nedostatky
+## Optimalizace
 
-V aplikaci se mnohokrát opakují identické objekty, například zdi, které se liší pouze
-v pozici. Každý takový objekt má ale vlastní hromadu informací, které jsou sice stejné,
-ale v paměti zabírají místo vícekrát. Je to primárně textura, pak i reference na
-Shader, Cameru. To je problém pro větší mapy, kde můj stroj už nezvládl mapu 50x80,
-protože došla GPU paměť (a RAMka používala 10 GB).
+> V aplikaci se mnohokrát opakují identické objekty, například zdi, které se liší
+> pouze v pozici. Každý takový objekt má ale vlastní hromadu informací, které jsou
+> sice stejné, ale v paměti zabírají místo vícekrát. Je to primárně textura, pak
+> i reference na Shader, Cameru. To je problém pro větší mapy, kde můj stroj už
+> nezvládl mapu 50x80, protože došla GPU paměť (a RAMka používala 10 GB).
+>
+> Řešení existuje, minimálně se nabízí [Instancing](https://learnopengl.com/Advanced-OpenGL/Instancing),
+> který ovšem není implementován, ale problém by dost pravděpodobně vyřešil.
 
-Řešení existuje, minimálně se nabízí [Instancing](https://learnopengl.com/Advanced-OpenGL/Instancing),
-který ovšem není implementován, ale problém by dost pravděpodobně vyřešil.
+Tento problém byl vyřešel existencí pouze jedné textury na mapu, od které mají všichni
+referenci na instanci.
 
 ## Povolení užití
 
