@@ -48,6 +48,8 @@ namespace zpg
         private int _teleportDurationMsOver2 { get; set; } = 500;
         // if E is held, only used for teleportation though
         private bool _interacting = false;
+        // run
+        private float _moveSpeedMultiplier = 1.0f;
 
         public Camera(float aspectRatio)
         {
@@ -101,6 +103,10 @@ namespace zpg
         public void ProcessKeyboard(KeyboardState input, float dT, IEnumerable<RenderObject> objects)
         {
             _interacting = input.IsKeyDown(Keys.E);
+            if (input.IsKeyDown(Keys.LeftShift) || input.IsKeyDown(Keys.RightShift))
+            {
+                _moveSpeedMultiplier = 2;
+            }
 
             // ===== TELEPORT =====
             // if teleport is active, don't do anything else
@@ -140,7 +146,7 @@ namespace zpg
                 horizontalDirection.Y = 0; // avoid flying
 
                 // move is the combination of horizontal and vertical direction
-                if (horizontalDirection.LengthSquared > 0) move += horizontalDirection.Normalized() * PlayerSpeed * dT;
+                if (horizontalDirection.LengthSquared > 0) move += horizontalDirection.Normalized() * PlayerSpeed * _moveSpeedMultiplier * dT;
             }
             { // === GRAVITY ===
                 // if not standing on object anymore, start falling
