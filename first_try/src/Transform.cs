@@ -38,5 +38,17 @@ namespace zpg
             OnPropertyChanged(propertyName);
             return true;
         }
+
+        public void SnapPositionToGrid(float precision = 0.01f)
+        {
+            Vector3 snapped = _position;
+            float invPrecision = 1f / precision;
+
+            snapped.X = MathF.Round(snapped.X * invPrecision) * precision;
+            snapped.Y = MathF.Round(snapped.Y * invPrecision) * precision;
+            snapped.Z = MathF.Round(snapped.Z * invPrecision) * precision;
+
+            _position = snapped;
+        }
     }
 }

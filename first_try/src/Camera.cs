@@ -156,7 +156,7 @@ namespace zpg
                 // gravity
                 if (_standingOnObject is null)
                 {
-                    // falling distance: y(t) = 1/2 * g * t^2 ; [y] = m, [g] = m*s^-2, [t] = s
+                    // falling distance: y(t) = 1/2 * g * t^2 ; [y] = m, [g] = m*s^-2, [t] = s ; BUT see docs!
                     // for more info, see https://en.wikipedia.org/wiki/Free_fall#Uniform_gravitational_field_without_air_resistance
                     float y_t = 0.5f * _gravitySpeed * dT;
                     verticalDirection -= new Vector3(0.0f, y_t, 0.0f);
@@ -250,6 +250,7 @@ namespace zpg
             // this move is final, it doesn't collide with any nearby object
             // therefore the player can be safely moved
             Transform.Position += move;
+            Transform.SnapPositionToGrid(0.001f);
         }
     }
 }
