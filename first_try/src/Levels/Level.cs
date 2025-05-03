@@ -34,7 +34,7 @@ namespace zpg
         public float BlockX { get; set; } = 2.0f;
         public float BlockY { get; set; } = 3.0f;
         public float BlockZ { get; set; } = 2.0f;
-        public float PlatformY { get; set; } = 0.01f;
+        public float PlatformY { get; set; } = 0.1f;
 
         // dimensions of the map
         public int MapX { get; set; }
@@ -203,13 +203,13 @@ namespace zpg
             Cube wall;
             if (WallTextureDiffuse is null || WallTextureSpecular is null)
             {
-                wall = new Cube(Shader, BlockX, BlockY, BlockZ, Camera, WallTextureDiffusePath, WallTextureSpecularPath);
+                wall = new(Shader, BlockX, BlockY, BlockZ, Camera, WallTextureDiffusePath, WallTextureSpecularPath);
                 WallTextureDiffuse = wall._diffuseMap;
                 WallTextureSpecular = wall._specularMap;
             }
             else
             {
-                wall = new Cube(Shader, BlockX, BlockY, BlockZ, Camera, WallTextureDiffuse, WallTextureSpecular);
+                wall = new(Shader, BlockX, BlockY, BlockZ, Camera, WallTextureDiffuse, WallTextureSpecular);
             }
             wall.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, BlockY / 2 + y * BlockY, z * BlockZ);
             wall.UpdateCollisionCube();
@@ -222,13 +222,13 @@ namespace zpg
             Cube @void;
             if (VoidTextureDiffuse is null || VoidTextureSpecular is null)
             {
-                @void = new Cube(Shader, BlockX, BlockY, BlockZ, Camera, VoidTextureDiffusePath, VoidTextureSpecularPath);
+                @void = new(Shader, BlockX, BlockY, BlockZ, Camera, VoidTextureDiffusePath, VoidTextureSpecularPath);
                 VoidTextureDiffuse = @void._diffuseMap;
                 VoidTextureSpecular = @void._specularMap;
             }
             else
             {
-                @void = new Cube(Shader, BlockX, BlockY, BlockZ, Camera, VoidTextureDiffuse, VoidTextureSpecular);
+                @void = new(Shader, BlockX, BlockY, BlockZ, Camera, VoidTextureDiffuse, VoidTextureSpecular);
             }
             @void.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, BlockY / 2 + y * BlockY, z * BlockZ);
             @void.UpdateCollisionCube();
@@ -252,7 +252,7 @@ namespace zpg
             {
                 floor = new(Shader, BlockX, PlatformY, BlockZ, Camera, FloorTextureDiffuse, FloorTextureSpecular);
             }
-            floor.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY - PlatformY, z * BlockZ);
+            floor.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY - PlatformY / 2, z * BlockZ);
             floor.UpdateCollisionCube();
 
             LevelObjects.Add(floor);
@@ -265,7 +265,7 @@ namespace zpg
         {
             // choose texture based on char
             TeleportPlatform teleport = new(Shader, BlockX, PlatformY, BlockZ, Camera, TeleportTextureDiffuseBasePath + ch + ".png", TeleportTextureSpecularBasePath + ch + ".png");
-            teleport.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY - PlatformY, z * BlockZ);
+            teleport.Transform.Position = new OpenTK.Mathematics.Vector3(x * BlockX, y * BlockY - PlatformY / 2, z * BlockZ);
             teleport.UpdateCollisionCube();
 
             LevelObjects.Add(teleport);
