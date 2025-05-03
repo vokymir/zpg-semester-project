@@ -107,6 +107,10 @@ namespace zpg
             {
                 _moveSpeedMultiplier = 2;
             }
+            else
+            {
+                _moveSpeedMultiplier = 1;
+            }
 
             // ===== TELEPORT =====
             // if teleport is active, don't do anything else
