@@ -1,6 +1,6 @@
 # 3D bludiště - Semestrální projekt ZPG
 
-Jakub Vokoun, 2. května 2025, javok@students.zcu.cz, A23B0235P
+Jakub Vokoun, 14. května 2025, javok@students.zcu.cz, A23B0235P
 
 ## Spuštění
 
