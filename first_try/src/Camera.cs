@@ -142,6 +142,7 @@ namespace zpg
             Vector3 horizontalDirection = Vector3.Zero;
             Vector3 verticalDirection = Vector3.Zero;
             Vector3 move = Vector3.Zero;
+            Vector3 preMoveCenter = CollisionCube.Center;
 
             { // === HORIZONTAL ===
                 if (input.IsKeyDown(Keys.W)) horizontalDirection += Front;
@@ -198,61 +199,67 @@ namespace zpg
                     // if collide, check both horizontal and vertical axis for the maximal position that could be done
                     // in the direction the player wants to go
                     // assume that there is no collision and then subtract to avoid collisions
-                    float maxXposition = CollisionCube.Center.X;
-                    float maxYposition = CollisionCube.Center.Y;
-                    float maxZposition = CollisionCube.Center.Z;
+                    Vector3 newPosition = preMoveCenter;
                     bool[] roundUp = [false, false, false];
+                    bool[] hit = [false, false, false];
 
-                    // check collision on X axis (forget Y,Z)
-                    CollisionCube.Center += new Vector3(0, -move.Y, -move.Z);
+                    // check collision on X axis
+                    newPosition += new Vector3(move.X, 0, 0);
+                    CollisionCube.Center = newPosition;
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
+                        hit[0] = true;
                         if (CollisionCube.Center.X >= o.CollisionCube.Center.X)
                         {
-                            maxXposition = o.CollisionCube.Center.X + o.CollisionCube.Xover2 + CollisionCube.Xover2;
+                            newPosition.X = o.CollisionCube.Center.X + o.CollisionCube.Xover2 + CollisionCube.Xover2;
                             roundUp[0] = true;
                         }
                         else
-                            maxXposition = o.CollisionCube.Center.X - o.CollisionCube.Xover2 - CollisionCube.Xover2;
+                            newPosition.X = o.CollisionCube.Center.X - o.CollisionCube.Xover2 - CollisionCube.Xover2;
                     }
 
-                    // check collision on Y axis (forget X, add Y)
-                    CollisionCube.Center += new Vector3(-move.X, move.Y, 0);
+                    // check collision on Y axis
+                    newPosition += new Vector3(0, move.Y, 0);
+                    CollisionCube.Center = newPosition;
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
+                        hit[1] = true;
                         // without epsilon, it sometimes allowed to jump through objects
                         float epsilon = 0.02f;
 
                         // player is higher than the object
                         if (CollisionCube.Center.Y + epsilon >= o.CollisionCube.Center.Y)
                         {
-                            maxYposition = o.CollisionCube.Center.Y + o.CollisionCube.Yover2 + CollisionCube.Yover2 + epsilon;
+                            newPosition.Y = o.CollisionCube.Center.Y + o.CollisionCube.Yover2 + CollisionCube.Yover2 + epsilon;
                             roundUp[1] = true;
                             _standingOnObject = o;
                         }
                         else if (CollisionCube.Center.Y < o.CollisionCube.Center.Y)// now not used, good for jumps
                         {
-                            maxYposition = o.CollisionCube.Center.Y - o.CollisionCube.Yover2 - CollisionCube.Yover2 - epsilon;
+                            newPosition.Y = o.CollisionCube.Center.Y - o.CollisionCube.Yover2 - CollisionCube.Yover2 - epsilon;
                         }
                     }
 
-                    // check collision on Z axis (forget Y, add Z)
-                    CollisionCube.Center += new Vector3(0, -move.Y, move.Z);
+                    // check collision on Z axis
+                    newPosition += new Vector3(0, 0, move.Z);
+                    CollisionCube.Center = newPosition;
                     if (CollisionCube.DoesCollide(o.CollisionCube))
                     {
+                        hit[2] = true;
                         if (CollisionCube.Center.Z >= o.CollisionCube.Center.Z)
                         {
-                            maxZposition = o.CollisionCube.Center.Z + o.CollisionCube.Zover2 + CollisionCube.Zover2;
+                            newPosition.Z = o.CollisionCube.Center.Z + o.CollisionCube.Zover2 + CollisionCube.Zover2;
                             roundUp[2] = true;
                         }
                         else
-                            maxZposition = o.CollisionCube.Center.Z - o.CollisionCube.Zover2 - CollisionCube.Zover2;
+                            newPosition.Z = o.CollisionCube.Center.Z - o.CollisionCube.Zover2 - CollisionCube.Zover2;
                     }
+
                     // revert to no move at all
-                    CollisionCube.Center += new Vector3(0, 0, -move.Z);
+                    CollisionCube.Center = preMoveCenter;
 
                     // snapping to grid
-                    var vect = new Vector3(maxXposition, maxYposition, maxZposition);
+                    var vect = newPosition;
                     Transform.SnapOneCoordToGrid(vect, 0, roundUp[0]);
                     Transform.SnapOneCoordToGrid(vect, 1, roundUp[1]);
                     Transform.SnapOneCoordToGrid(vect, 2, roundUp[2]);
